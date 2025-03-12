@@ -1,8 +1,8 @@
-// filepath: c:\Users\pcadmin\Desktop\CS308-FE\src\pages\LoginPage.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import '../App.css';
+import './Login.css';
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -10,13 +10,17 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  useEffect(() => {
+    document.title = "Login - Neptune";
+  }, []);
+
   return (
     <div className="d-flex flex-column min-vh-100">
       {/* Header with deep blue background */}
       <header className="w-100 bg-custom p-4">
         <div className="container d-flex justify-content-start">
           {/* Neptune text logo */}
-          <div className="text-white h2 font-weight-bold">
+          <div className="text-white fs-1 fw-bold text-center transition-transform ">
             NEPTUNE
           </div>
         </div>
@@ -24,25 +28,25 @@ export default function LoginPage() {
 
       {/* Main content */}
       <main className="flex-grow-1 d-flex flex-column align-items-center pt-5 px-3">
-        <div className="container max-w-md w-100 bg-white p-4 rounded shadow">
+        <div className="container-fluid col-12 col-md-6 col-lg-4">
           {/* Welcome message */}
           <h1 className="text-center mb-4">Welcome to Neptune</h1>
 
           {/* Only Login heading */}
           <div className="d-flex justify-content-center mb-4">
-            <div className="px-4 py-2 rounded bg-custom text-white">
-              Login
+            <div className="px-4 py-2 rounded text-custom">
+              Please Login Your Credentials
             </div>
           </div>
 
           {/* Login form */}
           <form className="space-y-3">
-            <div className="form-group">
+            <div className="form-group mb-3">
               <label>Email address</label>
               <input type="email" className="form-control" placeholder="Enter email" />
             </div>
 
-            <div className="form-group position-relative">
+            <div className="form-group position-relative mb-3">
               <label>Password</label>
               <input
                 type={showPassword ? "text" : "password"}
@@ -51,14 +55,14 @@ export default function LoginPage() {
               />
               <button
                 type="button"
-                className="btn btn-link position-absolute top-50 end-0 translate-middle-y"
+                className="btn  position-absolute margin-top-1"
                 onClick={togglePasswordVisibility}
-              >
+              > 
                 {showPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
               </button>
             </div>
 
-            <button type="submit" className="btn btn-custom w-100">
+            <button type="submit" className="btn btn-primary bg-custom w-100 mb-3 mt-4">
               Login
             </button>
 
