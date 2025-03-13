@@ -1,76 +1,112 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import './Login.css';
+import "./Login.css";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const [error, setError] = useState(""); // ✅ Track login errors
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "Login - Neptune";
   }, []);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Login successful!", data);
+        navigate("/mainpage"); // ✅ Redirect if login is successful
+      } else {
+        setError(data.message || "Invalid email or password"); // ✅ Show backend error message
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setError("Something went wrong. Please try again."); // ✅ Handle server/network errors
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Header with deep blue background */}
       <header className="w-100 bg-custom p-4">
         <div className="container d-flex justify-content-start">
-          {/* Neptune text logo */}
           <img 
-              src="/Neptune Logo.png" 
-              alt="Neptune Logo" 
-              className="img-fluid transition-transform" 
-              style={{ height: '50px' }} 
-            />
-
+            src="/Neptune Logo.png" 
+            alt="Neptune Logo" 
+            className="img-fluid transition-transform" 
+            style={{ height: "50px" }} 
+          />
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-grow-1 d-flex flex-column align-items-center pt-5 px-3">
         <div className="container-fluid col-12 col-md-6 col-lg-4">
-          {/* Welcome message */}
           <h1 className="text-center mb-4">Welcome to Neptune</h1>
 
-          {/* Only Login heading */}
           <div className="d-flex justify-content-center mb-4">
             <div className="px-4 py-2 rounded text-custom">
               Please Login Your Credentials
             </div>
           </div>
 
-          {/* Login form */}
-          <form className="space-y-3">
+          {/* Show error message if login fails */}
+          {error && <div className="alert alert-danger">{error}</div>}
+
+          <form className="space-y-3" onSubmit={handleLogin}>
             <div className="form-group mb-3">
               <label>Email address</label>
-              <input type="email" className="form-control" placeholder="Enter email" />
+              <input
+                type="email"
+                className="form-control"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
-            <div className="form-group position-relative mb-3">
+            <div className="form-group mb-3 position-relative">
               <label>Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                placeholder="Enter password"
-              />
-              <button
-                type="button"
-                className="btn  position-absolute margin-top-1"
-                onClick={togglePasswordVisibility}
-              > 
-                {showPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
-              </button>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control"
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-on-top position-absolute end-0 me-2 top-50 translate-middle-y"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary bg-custom w-100 mb-3 mt-4">
               Login
             </button>
 
-            {/* Not registered yet link */}
             <div className="text-center pt-2">
               <Link to="/register" className="text-custom">
                 Not registered yet? ✨
@@ -79,6 +115,6 @@ export default function LoginPage() {
           </form>
         </div>
       </main>
-    </div>
-  );
+    </div>
+  );
 }
