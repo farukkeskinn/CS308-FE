@@ -20,9 +20,13 @@ export default function LoginPage() {
       <header className="w-100 bg-custom p-4">
         <div className="container d-flex justify-content-start">
           {/* Neptune text logo */}
-          <div className="text-white fs-1 fw-bold text-center transition-transform ">
-            NEPTUNE
-          </div>
+          <img 
+              src="/Neptune Logo.png" 
+              alt="Neptune Logo" 
+              className="img-fluid transition-transform" 
+              style={{ height: '50px' }} 
+            />
+
         </div>
       </header>
 
