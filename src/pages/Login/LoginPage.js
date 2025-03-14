@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import "./Login.css";
+import Navbar from "../../components/AuthNavbar";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -45,22 +46,11 @@ export default function LoginPage() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <header className="w-100 bg-custom p-4">
-        <div className="container d-flex justify-content-start">
-          <Link to="/">
-            <img
-              src="/Neptune Logo.png"
-              alt="Neptune Logo"
-              className="img-fluid transition-transform logo-hover"
-              style={{ height: "50px" }}
-            />
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="flex-grow-1 d-flex flex-column align-items-center pt-5 px-3">
-        <div className="container-fluid col-12 col-md-6 col-lg-4">
-          <h1 className="text-center mb-4">Welcome to Neptune</h1>
+        <div className="container bg-white p-5 rounded shadow-lg" style={{ maxWidth: "600px", width: "90%" }}>
+          <h1 className="text-center mb-4 fw-bold text-custom">Welcome to Neptune</h1>
 
           <div className="d-flex justify-content-center mb-4">
             <div className="px-4 py-2 rounded text-custom">
@@ -105,18 +95,20 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary bg-custom w-100 mb-3 mt-4">
-              Login
-            </button>
+            <button type="submit" className="btn w-100 login-btn" style={{ backgroundColor: "#1f1c66", borderColor: "#1f1c66", color: "white" }}>Login</button>
 
             <div className="text-center pt-2">
-              <Link to="/register" className="text-custom">
+              <Link to="/register" className="text-primary text-decoration-none">
                 Not registered yet? ✨
               </Link>
             </div>
           </form>
         </div>
       </main>
+      {/* Footer */}
+      <footer className="footer bg-dark text-white text-center py-3 mt-auto">
+        &copy; 2025 Neptune. All rights reserved.
+      </footer>
     </div>
   );
 }
