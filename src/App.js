@@ -5,7 +5,7 @@ import React from "react";
 import Homepage from "./pages/Homepage/Homepage";
 // src/App.js
 import LoginPage from "./pages/Login/LoginPage";
-
+import Register from "./pages/Register/Register";
 function App() {
   return (
     <Router>
@@ -14,6 +14,9 @@ function App() {
       </Routes>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+      </Routes>
+      <Routes>
+        <Route path="/register" element={<Register />} />
       </Routes>
     </Router>
   );

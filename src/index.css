@@ -3,3 +3,32 @@ body {
   color: #212529;
   background-color: #f8f9fa;
 }
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.neptune-logo {
+  transition: transform 0.3s ease-in-out;
+}
+
+.neptune-logo:hover {
+  transform: scale(1.1); /* %10 büyüme efekti */
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.signup-btn:hover {
+  animation: bounce 0.5s ease-in-out infinite;
+}
+.footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
