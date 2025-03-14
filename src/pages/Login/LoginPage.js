@@ -32,8 +32,8 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Login successful!", data);
-        navigate("/homepage"); // ✅ Redirect if login is successful
+        console.log("Login successful! Directing to Homepage", data);
+        navigate("/"); // ✅ Redirect if login is successful
       } else {
         setError(data.message || "Invalid email or password"); // ✅ Show backend error message
       }
@@ -47,7 +47,7 @@ export default function LoginPage() {
     <div className="d-flex flex-column min-vh-100">
       <header className="w-100 bg-custom p-4">
         <div className="container d-flex justify-content-start">
-          <Link to="/homepage">
+          <Link to="/">
             <img
               src="/Neptune Logo.png"
               alt="Neptune Logo"

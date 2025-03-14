@@ -2,7 +2,7 @@ import { useState } from "react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaSignInAlt, FaShoppingCart } from "react-icons/fa";
-import "../pages/Home.css"; // CSS dosyasını içe aktarıyoruz
+import "../pages/Homepage/Home.css"; // CSS dosyasını içe aktarıyoruz
 
 const categories = [
   { name: "Laptops", subcategories: ["Gaming Laptops", "Ultrabooks", "Business Laptops"] },
