@@ -27,24 +27,25 @@ export default function RegisterPage() {
     e.preventDefault();
     
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("Registration successful!");
-      } else {
-        setMessage(data.error || "Something went wrong.");
+        const response = await fetch("http://localhost:8080/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstName, lastName, email, password }),
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          console.log("Register successful! Directing to Homepage", data);
+          navigate("/");
+        } else {
+          setError(data.message); // ✅ Show backend error message
+        }
+      } catch (error) {
+        console.error("Register failed:", error);
+        setError("Something went wrong. Please try again."); // ✅ Handle server/network errors
       }
-    } catch (error) {
-      setMessage("Server error, please try again later.");
-    }
-  };
+    };
 
   return (
     <div className="d-flex flex-column min-vh-100">
