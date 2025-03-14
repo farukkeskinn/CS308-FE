@@ -1,26 +1,21 @@
 import "./Register.css";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import ThreeDFrame from "../../components/ui/ThreeDFrame"; // Doğru import yolu
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    surname: "",
-    email: "",
-    password: ""
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(""); // ✅ Track login errors
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
-  };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -76,19 +71,19 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit}>
             <div className="row mb-3">
               <div className="col">
-                <input type="text" name="name" className="form-control" placeholder="Name" value={formData.name} onChange={handleChange} required />
+                <input type="text" name="name" className="form-control" placeholder="Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
               </div>
               <div className="col">
-                <input type="text" name="surname" className="form-control" placeholder="Surname" value={formData.surname} onChange={handleChange} required />
+                <input type="text" name="surname" className="form-control" placeholder="Surname" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
               </div>
             </div>
 
             <div className="mb-3">
-              <input type="email" name="email" className="form-control" placeholder="E-mail" value={formData.email} onChange={handleChange} required />
+              <input type="email" name="email" className="form-control" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
             <div className="mb-3 position-relative">
-              <input type={showPassword ? "text" : "password"} name="password" className="form-control pe-5" placeholder="Password" value={formData.password} onChange={handleChange} required />
+              <input type={showPassword ? "text" : "password"} name="password" className="form-control pe-5" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               <button type="button" className="btn position-absolute top-50 end-0 translate-middle-y" onClick={togglePasswordVisibility}>
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
