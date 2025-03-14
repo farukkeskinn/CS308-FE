@@ -33,7 +33,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         console.log("Login successful!", data);
-        navigate("/mainpage"); // ✅ Redirect if login is successful
+        navigate("/homepage"); // ✅ Redirect if login is successful
       } else {
         setError(data.message || "Invalid email or password"); // ✅ Show backend error message
       }
@@ -47,12 +47,14 @@ export default function LoginPage() {
     <div className="d-flex flex-column min-vh-100">
       <header className="w-100 bg-custom p-4">
         <div className="container d-flex justify-content-start">
-          <img 
-            src="/Neptune Logo.png" 
-            alt="Neptune Logo" 
-            className="img-fluid transition-transform" 
-            style={{ height: "50px" }} 
-          />
+          <Link to="/homepage">
+            <img
+              src="/Neptune Logo.png"
+              alt="Neptune Logo"
+              className="img-fluid transition-transform logo-hover"
+              style={{ height: "50px" }}
+            />
+          </Link>
         </div>
       </header>
 
@@ -115,6 +117,6 @@ export default function LoginPage() {
           </form>
         </div>
       </main>
-    </div>
-  );
+    </div>
+  );
 }
