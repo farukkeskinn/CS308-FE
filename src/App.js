@@ -6,6 +6,7 @@ import Homepage from "./pages/Homepage/Homepage";
 // src/App.js
 import LoginPage from "./pages/Login/LoginPage";
 import Register from "./pages/Register/Register";
+import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
 function App() {
   return (
     <Router>
@@ -17,6 +18,9 @@ function App() {
       </Routes>
       <Routes>
         <Route path="/register" element={<Register />} />
+      </Routes>
+      <Routes>
+        <Route path="/shopping-cart" element={<ShoppingCart />} />
       </Routes>
     </Router>
   );

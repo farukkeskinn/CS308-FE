@@ -82,7 +82,7 @@ const Navbar = () => {
           <Link to="/login" className="text-white fs-5">
             <FaSignInAlt />
           </Link>
-          <Link to="/cart" className="text-white fs-5 position-relative">
+          <Link to="/shopping-cart" className="text-white fs-5 position-relative">
             <FaShoppingCart />
             {/* Küçültülmüş Sepet Sayısı */}
             <span className="position-absolute top-0 start-100 translate-middle badge bg-danger p-1" style={{ fontSize: "10px", minWidth: "15px" }}>
