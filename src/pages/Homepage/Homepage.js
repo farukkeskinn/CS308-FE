@@ -38,10 +38,10 @@ export default function HomePage() {
                 <div className="col-md-4" key={product.productId}>
                   <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
                     <div className="card shadow">
-                      <img src={product.image} className="card-img-top" alt={product.name} />
+                      <img src={product.image_url} className="card-img-top" alt={product.name} />
                       <div className="card-body text-center">
                         <h5 className="card-title">{product.name}</h5>
-                        <p className="card-text">{product.price} TL</p>
+                        <p className="card-text">{product.price} $</p>
                       </div>
                     </div>
                   </Link>

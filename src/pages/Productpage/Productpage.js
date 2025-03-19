@@ -10,28 +10,23 @@ export default function ProductPage() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [reviewsVisible, setReviewsVisible] = useState(false);
 
   useEffect(() => {
     if (!productId) return;
-  
+
     axios.get(`http://localhost:8080/api/products/${productId}/details`)
       .then((response) => {
         setProduct(response.data);
         setLoading(false);
-
-        const categoryId = response.data.category?.categoryId || response.data.category?.parentCategory?.categoryId;
-
-        return axios.get(`http://localhost:8080/api/products/by-category/${categoryId}`);
+        return axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
       })
-      .then((categoryResponse) => {
-        if (categoryResponse.data.content && Array.isArray(categoryResponse.data.content)) {
-          const filteredProducts = categoryResponse.data.content.filter(p => p.productId !== String(productId));
-          setRecommendedProducts(filteredProducts);
+      .then((recommendedResponse) => {
+        if (recommendedResponse.data.content && Array.isArray(recommendedResponse.data.content)) {
+          setRecommendedProducts(recommendedResponse.data.content);
         }
       })
-      .catch((error) => {
-        setError("Product not found.");
+      .catch(() => {
         setLoading(false);
       });
   }, [productId]);
@@ -44,23 +39,15 @@ export default function ProductPage() {
     return <h2 className="text-center mt-5">Product not found.</h2>;
   }
 
-  // Calculate Rating Breakdown
   const totalReviews = product.reviews ? product.reviews.length : 0;
   const averageRating = totalReviews > 0
     ? (product.reviews.reduce((sum, c) => sum + c.rating, 0) / totalReviews).toFixed(1)
     : "No Rating Yet";
 
-  const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
-    stars: star,
-    count: product.reviews.filter((c) => c.rating === star).length,
-  }));
-
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Navbar */}
       <Navbar />
 
-      {/* Product Details */}
       <div className="container mt-5">
         <h2 className="fw-bold">{product.name}</h2>
 
@@ -71,19 +58,19 @@ export default function ProductPage() {
         </div>
 
         <div className="row mt-4">
-          {/* Left: Product Image */}
           <div className="col-md-5 text-center">
             <img src={product.imageUrl} alt={product.name} className="img-fluid rounded shadow-lg" />
           </div>
 
-          {/* Right: Product Information */}
           <div className="col-md-7">
             {/* Description Box */}
             <div className="p-3 rounded" style={{ backgroundColor: "#1f1c66", color: "white" }}>
-              <p className="lead">{product.description}</p>
+              <p className="mb-0" style={{ fontSize: "15px", fontWeight: "400", letterSpacing: "0.5px", lineHeight: "2.6" }}>
+                {product.description}
+              </p>
             </div>
 
-            {/* Technical Details */}
+
             <table className="table table-bordered mt-3 shadow-sm">
               <tbody>
                 <tr><th>Model</th><td>{product.model}</td></tr>
@@ -94,87 +81,106 @@ export default function ProductPage() {
               </tbody>
             </table>
 
-            {/* Price */}
             <h3 className="fw-bold text-primary mt-3">${product.price.toFixed(2)}</h3>
 
             {/* Cart & Favorite Buttons */}
             <div className="d-flex gap-3 mt-3">
-              <button className="btn btn-primary">🛒 Add to Cart</button>
+              <button className="btn btn-primary shadow-lg" style={{ backgroundColor: "#1f1c66", borderColor: "#1f1c66" }}>
+                🛒 Add to Cart
+              </button>
               <button 
-                className={`btn ${isFavorited ? "btn-success" : "btn-outline-danger"}`} 
+                className={`btn ${isFavorited ? "btn-success" : "btn-outline-danger"} shadow-lg`} 
                 onClick={() => setIsFavorited(!isFavorited)}
               >
                 {isFavorited ? "✅ Added to Favorites" : "❤️ Add to Favorites"}
               </button>
             </div>
+
           </div>
         </div>
 
-        {/* ⭐ Rating Breakdown (Kutucuk İçinde) */}
-
-<div className="mt-5 border rounded shadow-sm p-3 bg-white w-50">
-  <h6 className="fw-bold" style={{ fontSize: "14px" }}>⭐ Rating Breakdown</h6>
-  <div className="progress-container">
-    {ratingBreakdown.map((entry) => (
-      <div key={entry.stars} className="d-flex align-items-center gap-2 mb-1">
-        <span className="fw-bold" style={{ fontSize: "20px" }}>{entry.stars} ⭐</span>
-        <div className="progress flex-grow-1" style={{ height: "5px" }}>  {/* Çizgiler uzatıldı */}
-          <div
-            className="progress-bar bg-warning"
-            role="progressbar"
-            style={{ width: `${(entry.count / totalReviews) * 100}%` }}
-          ></div>
-        </div>
-        <span style={{ fontSize: "12px" }}>{entry.count}</span>
-      </div>
-    ))}
-  </div>
-</div>
+        {/* Product Reviews Section */}
+        <div className="mt-5 p-3 border rounded shadow-sm bg-white">
+          <div className="d-flex justify-content-between align-items-center">
+            <h4 className="fw-bold">Product Reviews</h4>
+            <button 
+              className="btn shadow-lg" 
+              onClick={() => setReviewsVisible(!reviewsVisible)}
+              style={{ backgroundColor: "#1f1c66", color: "white", borderColor: "#1f1c66" }}
+            >
+              {reviewsVisible ? "−" : "+"}
+            </button>
+          </div>
 
 
+          {reviewsVisible && (
+            <div className="mt-3">
+              <div className="border rounded p-3 bg-light">
+                <h6 className="fw-bold">⭐ Rating Breakdown</h6>
+                <div className="progress-container">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = product.reviews.filter((c) => c.rating === star).length;
+                    return (
+                      <div key={star} className="d-flex align-items-center gap-2 mb-1">
+                        <span className="fw-bold">{star} ⭐</span>
+                        <div className="progress flex-grow-1" style={{ height: "5px" }}>
+                          <div className="progress-bar bg-warning" role="progressbar"
+                            style={{ width: `${(count / totalReviews) * 100}%` }}></div>
+                        </div>
+                        <span>{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-
-        {/* Reviews Section (Inside Shadowed Box) */}
-        <div className="mt-5 p-3 rounded shadow" style={{ backgroundColor: "#f8f9fa" }}>
-          <h4 className="fw-bold">Customer Reviews</h4>
-          {totalReviews > 0 ? (
-            <ul className="list-group">
-              {product.reviews.map((review, index) => (
-                <li key={index} className="list-group-item shadow-sm p-3 mb-2 rounded" style={{ backgroundColor: "#fff" }}>
-                  <span className="fw-bold">{"⭐".repeat(review.rating)}</span>
-                  <p className="mb-0">{review.comment || "No Comment"}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted">No Comments Yet.</p>
+              <div className="mt-3 p-3 rounded border bg-light" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                <h6 className="fw-bold">Customer Reviews</h6>
+                {totalReviews > 0 ? (
+                  <ul className="list-group">
+                    {product.reviews.map((review, index) => (
+                      <li key={index} className="list-group-item p-2">
+                        <span className="fw-bold">{"⭐".repeat(review.rating)}</span> - {review.comment || "No Comment"}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted">No Comments Yet.</p>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Recommended Products Section */}
-        <div className="mt-5">
-          <h4 className="fw-bold">Recommended Products</h4>
+        {/* Recommended Products Section (Mavi Kutunun İçinde) */}
+        <div className="mt-5 p-4 rounded shadow-lg" style={{ backgroundColor: "#1f1c66", color: "white" }}>
+          <h4 className="fw-bold text-center mb-3">Recommended Products</h4>
           <div className="row">
             {recommendedProducts.length > 0 ? (
               recommendedProducts.map((rec) => (
                 <div key={rec.productId} className="col-md-4">
-                  <Link to={`/product/${rec.productId}`} className="text-decoration-none text-dark">
-                    <div className="card shadow">
-                      <img src={rec.image_url} className="card-img-top" alt={rec.name} />
+                  <Link to={`/product/${rec.productId}`} className="text-decoration-none text-white">
+                    <div className="card bg-light shadow-sm">
+                      <img src={rec.image_url} className="card-img-top" alt={rec.name} style={{ maxWidth: "120px", margin: "auto", padding: "10px" }} />
                       <div className="card-body text-center">
-                        <h5 className="card-title">{rec.name}</h5>
-                        <p className="card-text">${rec.price.toFixed(2)}</p>
+                        <h6 className="card-title text-dark">{rec.name}</h6>
+                        <p className="card-text text-primary">${rec.price.toFixed(2)}</p>
                       </div>
                     </div>
                   </Link>
                 </div>
               ))
             ) : (
-              <p className="text-muted">No recommended products found.</p>
+              <p className="text-center">No recommended products found.</p>
             )}
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="text-center mt-4 p-3 bg-dark text-white">
+        <p className="mb-0">© 2025 Neptune. All Rights Reserved.</p>
+      </footer>
     </div>
   );
 }
