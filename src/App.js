@@ -6,17 +6,17 @@ import Homepage from "./pages/Homepage/Homepage";
 // src/App.js
 import LoginPage from "./pages/Login/LoginPage";
 import Register from "./pages/Register/Register";
+import Productpage from "./pages/Productpage/Productpage";
+
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Homepage />} />
-      </Routes>
-      <Routes>
         <Route path="/login" element={<LoginPage />} />
-      </Routes>
-      <Routes>
         <Route path="/register" element={<Register />} />
+        <Route path="/product/:productId" element={<Productpage />} /> {/* ✅ Product Page */}
       </Routes>
     </Router>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
+import { Link } from "react-router-dom"; // ✅ Import Link
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -34,15 +35,16 @@ export default function HomePage() {
           <div className="row g-4">
             {products.length > 0 ? (
               products.map((product) => (
-                <div className="col-md-4" key={product.id}>
-                  <div className="card shadow">
-                    <img src={product.image} className="card-img-top" alt={product.name} />
-                    <div className="card-body text-center">
-                      <h5 className="card-title">{product.name}</h5>
-                      <p className="card-text">{product.price} TL</p>
-                      <button className="btn btn-primary w-100">Add to Cart</button>
+                <div className="col-md-4" key={product.productId}>
+                  <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
+                    <div className="card shadow">
+                      <img src={product.image} className="card-img-top" alt={product.name} />
+                      <div className="card-body text-center">
+                        <h5 className="card-title">{product.name}</h5>
+                        <p className="card-text">{product.price} TL</p>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))
             ) : (
