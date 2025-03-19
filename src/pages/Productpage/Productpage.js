@@ -50,6 +50,7 @@ export default function ProductPage() {
 
       <div className="container mt-5">
         <h2 className="fw-bold">{product.name}</h2>
+        <p className="text-muted" style={{ fontSize: "14px" }}>{productId}</p>
 
         {/* Rating & Review Count */}
         <div className="d-flex align-items-center gap-3 mt-2">

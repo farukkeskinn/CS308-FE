@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
-import { Link } from "react-router-dom"; // ✅ Import Link
+import { Link } from "react-router-dom";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -37,11 +37,35 @@ export default function HomePage() {
               products.map((product) => (
                 <div className="col-md-4" key={product.productId}>
                   <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
-                    <div className="card shadow">
-                      <img src={product.image_url} className="card-img-top" alt={product.name} />
-                      <div className="card-body text-center">
-                        <h5 className="card-title">{product.name}</h5>
-                        <p className="card-text">{product.price} $</p>
+                    <div className="card shadow p-3 text-center">
+                      {/* ✅ Resim Sabit Boyutta, Oranı Bozulmadan */}
+                      <div className="d-flex justify-content-center align-items-center" style={{ height: "200px", overflow: "hidden" }}>
+                        <img 
+                          src={product.image_url} 
+                          className="img-fluid" 
+                          alt={product.name} 
+                          style={{ objectFit: "contain", maxHeight: "100%", width: "100%" }} 
+                        />
+                      </div>
+                      <div className="card-body">
+                        {/* ✅ Ürün adı lacivert kutunun içinde */}
+                        <div 
+                          className="p-2 rounded text-white mb-2" 
+                          style={{ backgroundColor: "#1f1c66", display: "inline-block", minWidth: "100%" }}
+                        >
+                          <h6 className="fw-bold mb-0">{product.name}</h6>
+                        </div>
+                        
+                        {/* ✅ Açıklama (Description) - Biraz daha büyük ve altta */}
+                        <p 
+                          className="text-muted" 
+                          style={{ fontSize: "15px", lineHeight: "1.5", minHeight: "60px", marginTop: "10px" }}
+                        >
+                          {product.description.length > 80 ? product.description.substring(0, 80) + "..." : product.description}
+                        </p>
+
+                        {/* ✅ Fiyat bilgisi */}
+                        <p className="fw-bold text-primary fs-5">${product.price}</p>
                       </div>
                     </div>
                   </Link>
