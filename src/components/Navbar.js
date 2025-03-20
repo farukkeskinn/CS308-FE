@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaSignInAlt, FaShoppingCart } from "react-icons/fa";
+import SearchBar from "./ui/SearchBar";
 
-const Navbar = () => {
+const Navbar = ({ onSearch }) => {  
   const [categories, setCategories] = useState([]); 
-  const [activeDropdown, setActiveDropdown] = useState(null); // ✅ Açık olan dropdown state
-  const [loading, setLoading] = useState(true); 
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
@@ -23,12 +24,15 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Eski Navbar (Değişmedi) */}
       <nav className="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <div className="container d-flex justify-content-between align-items-center">
-          <Link className="navbar-brand fw-bold fs-3 text-white transition-transform" to="/">
+        <div className="container d-flex flex-wrap justify-content-between align-items-center">
+          {/* ✅ Logo */}
+          <Link className="navbar-brand fw-bold fs-3 text-white" to="/">
             NEPTUNE
           </Link>
+          <div className="flex-grow-1 mx-3 d-flex justify-content-center">
+            <SearchBar onSearch={onSearch} />
+          </div>
 
           <div className="d-flex gap-3 align-items-center">
             <Link to="/login" className="text-white fs-5">
@@ -44,10 +48,9 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Yeni Alt Navbar (Renk: #ebe715) */}
       <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#1f1c66", marginTop: "3px" }}>
-        <div className="container d-flex justify-content-center">
-          <ul className="navbar-nav d-flex flex-row gap-4">
+        <div className="container d-flex flex-wrap justify-content-center">
+          <ul className="navbar-nav d-flex flex-row flex-wrap gap-2">
             {loading ? (
               <li className="nav-item">
                 <span className="nav-link text-dark">Loading...</span>
@@ -58,15 +61,13 @@ const Navbar = () => {
                 .map((category, index) => (
                   <li 
                     key={index} 
-                    className="nav-item dropdown position-relative"
-                    onMouseEnter={() => setActiveDropdown(index)} // ✅ Mouse girince aç
-                    onMouseLeave={() => setActiveDropdown(null)} // ❌ Mouse çıkınca kapat
+                    className="nav-item dropdown"
+                    onMouseEnter={() => setActiveDropdown(index)}
+                    onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <Link className="nav-link text-white dropdown-toggle" to="#">
                       {category.categoryName}
                     </Link>
-
-                    {/* Subcategory Açılır Menü */}
                     {activeDropdown === index && (
                       <ul className="dropdown-menu show position-absolute mt-2">
                         {categories
@@ -95,4 +96,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
