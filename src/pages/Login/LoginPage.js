@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(""); // ✅ Track login errors
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError(""); // Önceki hatayı temizle
 
     try {
       const response = await fetch("http://localhost:8080/api/auth/login", {
@@ -33,14 +33,19 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Login successful! Directing to Homepage", data);
-        navigate("/"); // ✅ Redirect if login is successful
+        console.log("Login successful!", data);
+
+        // ✅ JWT Tokeni kaydet
+        localStorage.setItem("jwtToken", data.token);
+
+        // ✅ Ana sayfaya yönlendir
+        navigate("/");
       } else {
-        setError(data.message || "Invalid email or password"); // ✅ Show backend error message
+        setError(data.message || "Invalid email or password");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      setError("Something went wrong. Please try again."); // ✅ Handle server/network errors
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -58,7 +63,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Show error message if login fails */}
+          {/* ✅ Hata mesajı */}
           {error && <div className="alert alert-danger">{error}</div>}
 
           <form className="space-y-3" onSubmit={handleLogin}>
@@ -95,7 +100,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" className="btn w-100 login-btn" style={{ backgroundColor: "#1f1c66", borderColor: "#1f1c66", color: "white" }}>Login</button>
+            <button type="submit" className="btn w-100 login-btn" style={{ backgroundColor: "#1f1c66", borderColor: "#1f1c66", color: "white" }}>
+              Login
+            </button>
 
             <div className="text-center pt-2">
               <Link to="/register" className="text-primary text-decoration-none">
@@ -105,6 +112,7 @@ export default function LoginPage() {
           </form>
         </div>
       </main>
+
       {/* Footer */}
       <footer className="footer bg-dark text-white text-center py-3 mt-auto">
         &copy; 2025 Neptune. All rights reserved.
