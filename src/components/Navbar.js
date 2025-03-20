@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { FaSignInAlt, FaShoppingCart, FaUserCircle } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaSignInAlt, FaShoppingCart } from "react-icons/fa";
+import SearchBar from "./ui/SearchBar"; 
 
-const Navbar = () => {
+const Navbar = () => {  
   const [categories, setCategories] = useState([]); 
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [loading, setLoading] = useState(true); 
-  const [token, setToken] = useState(localStorage.getItem("jwtToken"));
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [customerName, setCustomerName] = useState("");
-  const [logoClicked, setLogoClicked] = useState(false); // ✅ Logo animasyonu için state
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
       .then((response) => response.json())
       .then((data) => {
+        console.log("API Response:", data);
         setCategories(data || []);
         setLoading(false);
       })
@@ -22,81 +21,32 @@ const Navbar = () => {
         console.error("Error fetching categories:", error);
         setLoading(false);
       });
+  }, []);
 
-    if (token) {
-      fetch("http://localhost:8080/api/user/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.customer) {
-            setCustomerName(data.customer.name || "");
-          }
-        })
-        .catch(() => {
-          setCustomerName("");
-        });
+  // navigate to homepage when a search is made
+  const handleSearch = (query) => {
+    if (query.trim() !== "") {
+      navigate(`/?search=${encodeURIComponent(query)}`);
     }
-  }, [token]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("jwtToken"); 
-    setToken(null); 
-    setProfileMenuOpen(false);
-    setCustomerName("");
-  };
-
-  const handleLogoClick = () => {
-    setLogoClicked(true);
-    setTimeout(() => {
-      window.location.reload(); // ✅ Sayfa yenileme
-    }, 500); // ✅ 500ms sonra sayfa yenile (animasyon bitince)
   };
 
   return (
     <>
-      {/* Üst Navbar */}
+      {/* Top Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <div className="container d-flex justify-content-between align-items-center">
-          {/* ✅ NEPTUNE Logosu - Animasyon ve Yenileme */}
-          <span
-            className={`navbar-brand fw-bold fs-3 text-white transition-transform ${logoClicked ? "animate-logo" : ""}`}
-            onClick={handleLogoClick}
-            style={{ cursor: "pointer", transition: "transform 0.3s ease-in-out" }}
-          >
+        <div className="container d-flex flex-wrap justify-content-between align-items-center">
+          {/* Logo */}
+          <Link className="navbar-brand fw-bold fs-3 text-white" to="/">
             NEPTUNE
-          </span>
+          </Link>
+          <div className="flex-grow-1 mx-3 d-flex justify-content-center">
+            <SearchBar onSearch={handleSearch} />
+          </div>
 
           <div className="d-flex gap-3 align-items-center">
-            {token ? (
-              <div className="position-relative">
-                <button 
-                  className="btn btn-outline-light d-flex align-items-center gap-2" 
-                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                >
-                  <FaUserCircle className="fs-5" />
-                  {customerName || "Account"}
-                </button>
-
-                {profileMenuOpen && (
-                  <div 
-                    className="position-fixed top-0 end-0 mt-5 me-3 p-3 bg-white shadow-lg rounded"
-                    style={{ zIndex: 1050, minWidth: "250px" }}
-                  >
-                    <p className="mb-2 fw-bold">{customerName}</p>
-                    <hr />
-                    <Link to="/profile" className="d-block text-decoration-none text-dark mb-2">View Profile</Link>
-                    <button className="btn btn-danger w-100" onClick={handleLogout}>Logout</button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link to="/login" className="text-white fs-5">
-                <FaSignInAlt />
-              </Link>
-            )}
-
-            {/* Sepet */}
+            <Link to="/login" className="text-white fs-5">
+              <FaSignInAlt />
+            </Link>
             <Link to="/cart" className="text-white fs-5 position-relative">
               <FaShoppingCart />
               <span className="position-absolute top-0 start-100 translate-middle badge bg-danger p-1">
@@ -107,13 +57,13 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Alt Navbar (Kategori Menüsü) */}
+      {/* Bottom Navbar for Categories */}
       <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#1f1c66", marginTop: "3px" }}>
-        <div className="container d-flex justify-content-center">
-          <ul className="navbar-nav d-flex flex-row gap-4">
+        <div className="container d-flex flex-wrap justify-content-center">
+          <ul className="navbar-nav d-flex flex-row flex-wrap gap-2">
             {loading ? (
               <li className="nav-item">
-                <span className="nav-link text-white">Loading...</span>
+                <span className="nav-link text-dark">Loading...</span>
               </li>
             ) : categories.length > 0 ? (
               categories
@@ -121,14 +71,13 @@ const Navbar = () => {
                 .map((category, index) => (
                   <li 
                     key={index} 
-                    className="nav-item dropdown position-relative"
-                    onMouseEnter={() => setActiveDropdown(index)} 
+                    className="nav-item dropdown"
+                    onMouseEnter={() => setActiveDropdown(index)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <Link className="nav-link text-white dropdown-toggle" to="#">
                       {category.categoryName}
                     </Link>
-
                     {activeDropdown === index && (
                       <ul className="dropdown-menu show position-absolute mt-2">
                         {categories
@@ -146,21 +95,12 @@ const Navbar = () => {
                 ))
             ) : (
               <li className="nav-item">
-                <span className="nav-link text-white">No Categories Found</span>
+                <span className="nav-link text-dark">No Categories Found</span>
               </li>
             )}
           </ul>
         </div>
       </nav>
-
-      {/* CSS Animasyon */}
-      <style>
-        {`
-          .animate-logo {
-            transform: scale(1.2);
-          }
-        `}
-      </style>
     </>
   );
 };

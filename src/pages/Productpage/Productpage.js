@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import Navbar from "../../components/Navbar";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -46,7 +45,6 @@ export default function ProductPage() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <Navbar />
 
       <div className="container mt-5">
         <h2 className="fw-bold">{product.name}</h2>
@@ -153,7 +151,7 @@ export default function ProductPage() {
           )}
         </div>
 
-        {/* Recommended Products Section (Mavi Kutunun İçinde) */}
+        {/* Recommended Products Section */}
         <div className="mt-5 p-4 rounded shadow-lg" style={{ backgroundColor: "#1f1c66", color: "white" }}>
           <h4 className="fw-bold text-center mb-3">Recommended Products</h4>
           <div className="row">
