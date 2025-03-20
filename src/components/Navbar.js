@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaSignInAlt, FaShoppingCart } from "react-icons/fa";
-import SearchBar from "./ui/SearchBar";
+import SearchBar from "./ui/SearchBar"; 
 
-const Navbar = ({ onSearch }) => {  
+const Navbar = () => {  
   const [categories, setCategories] = useState([]); 
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
@@ -22,16 +23,24 @@ const Navbar = ({ onSearch }) => {
       });
   }, []);
 
+  // navigate to homepage when a search is made
+  const handleSearch = (query) => {
+    if (query.trim() !== "") {
+      navigate(`/?search=${encodeURIComponent(query)}`);
+    }
+  };
+
   return (
     <>
+      {/* Top Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
         <div className="container d-flex flex-wrap justify-content-between align-items-center">
-          {/* ✅ Logo */}
+          {/* Logo */}
           <Link className="navbar-brand fw-bold fs-3 text-white" to="/">
             NEPTUNE
           </Link>
           <div className="flex-grow-1 mx-3 d-flex justify-content-center">
-            <SearchBar onSearch={onSearch} />
+            <SearchBar onSearch={handleSearch} />
           </div>
 
           <div className="d-flex gap-3 align-items-center">
@@ -48,6 +57,7 @@ const Navbar = ({ onSearch }) => {
         </div>
       </nav>
 
+      {/* Bottom Navbar for Categories */}
       <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#1f1c66", marginTop: "3px" }}>
         <div className="container d-flex flex-wrap justify-content-center">
           <ul className="navbar-nav d-flex flex-row flex-wrap gap-2">

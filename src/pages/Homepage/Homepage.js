@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Navbar from "../../components/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]); 
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchParams] = useSearchParams(); 
+
 
   useEffect(() => {
     axios.get("http://localhost:8080/api/products")
       .then((response) => {
-        console.log("API Response:", response.data);
         setProducts(response.data);
         setFilteredProducts(response.data);
       })
@@ -19,24 +19,23 @@ export default function HomePage() {
       });
   }, []);
 
-  const handleSearch = (query) => {
-    if (query.trim() === "") {
-      setFilteredProducts(products);
-    } else {
+  useEffect(() => {
+    const query = searchParams.get("search"); 
+    if (query) {
       const filtered = products.filter((product) =>
         product.name.toLowerCase().includes(query.toLowerCase()) ||
         product.description.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
     }
-  };
+  }, [searchParams, products]);
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Navbar */}
-      <Navbar onSearch={handleSearch} />
 
-      {/* Hero Section */}
+      {/* ✅ Hero Section */}
       <main className="flex-grow-1 container text-center py-5">
         <h1 className="fw-bold text-custom">Welcome to Neptune</h1>
         <p className="fs-5 text-muted">
@@ -51,7 +50,6 @@ export default function HomePage() {
                 <div className="col-md-4" key={product.productId}>
                   <Link to={`/product/${product.productId}`} className="text-decoration-none text-dark">
                     <div className="card shadow p-3 text-center">
-                      {}
                       <div className="d-flex justify-content-center align-items-center" style={{ height: "200px", overflow: "hidden" }}>
                         <img 
                           src={product.image_url} 
@@ -73,7 +71,6 @@ export default function HomePage() {
                         >
                           {product.description.length > 80 ? product.description.substring(0, 80) + "..." : product.description}
                         </p>
-
                         <p className="fw-bold text-primary fs-5">${product.price}</p>
                       </div>
                     </div>
