@@ -1,12 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../pages/Homepage/Home.css"; // CSS dosyasını içe aktarıyoruz
+import "../pages/Homepage/Home.css";
 
 const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
       <div className="container d-flex justify-content-between align-items-center">
-        {/* Logo (Hover ile büyüyen) */}
         <Link
           className="navbar-brand fw-bold fs-3 text-white transition-transform"
           to="/"

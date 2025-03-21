@@ -1,4 +1,3 @@
-
 import React from "react";
 
 const ThreeDFrame = ({
@@ -9,8 +8,8 @@ const ThreeDFrame = ({
   frameColor = "#1f1c66",
   frameThickness = "4px",
   depth = "8px",
-  padding = "10px 20px", // Kutu küçültüldü
-  borderRadius = "8px" // Köşeler biraz daha yuvarlatıldı
+  padding = "10px 20px",
+  borderRadius = "8px"
 }) => {
   return (
     <div

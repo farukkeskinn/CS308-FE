@@ -35,13 +35,10 @@ export default function RegisterPage() {
       if (response.ok) {
         console.log("Register successful!", data);
 
-        // ✅ JWT Tokeni kaydet
         localStorage.setItem("jwtToken", data.token);
 
-        // ✅ Başarı mesajı göster
         setMessage("Registration successful! Redirecting...");
 
-        // ✅ Ana sayfaya yönlendir
         setTimeout(() => {
           navigate("/");
         }, 2000);
@@ -60,7 +57,7 @@ export default function RegisterPage() {
 
       <main className="flex-grow-1 d-flex flex-column align-items-center py-5 px-3">
         <div className="container bg-white p-5 rounded shadow-lg" style={{ maxWidth: "600px", width: "90%" }}>
-          <h1 className="text-center fw-bold text-custom">Welcome to Neptune</h1>
+          <h1 className="text-center mb-4 fw-bold text-custom">Welcome to NEPTUNE</h1>
           
           <div className="d-flex justify-content-center mb-4">
             <div className="px-4 py-2 rounded text-custom">
@@ -68,27 +65,25 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* ✅ Hata mesajı */}
           {error && <div className="alert alert-danger">{error}</div>}
 
-          {/* ✅ Başarı mesajı */}
           {message && <div className="alert alert-success">{message}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="row mb-3">
               <div className="col">
                 <label>Name</label>
-                <input type="text" className="form-control" placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                <input type="text" className="form-control" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
               </div>
               <div className="col">
                 <label>Surname</label>
-                <input type="text" className="form-control" placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                <input type="text" className="form-control" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
               </div>
             </div>
 
             <div className="mb-3">
               <label>Email address</label>
-              <input type="email" className="form-control" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
             <div className="form-group mb-3 position-relative">
@@ -97,7 +92,6 @@ export default function RegisterPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   className="form-control"
-                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -118,7 +112,13 @@ export default function RegisterPage() {
           </form>
 
           <div className="text-center mt-3">
-            <Link to="/login" className="text-primary text-decoration-none">Already signed up? 😊</Link>
+            <Link 
+              to="/login" 
+              className="text-decoration-none"
+              style={{ color: "#1f1c66", fontWeight: "bold" }}
+            >
+              Already signed up? 😊
+            </Link>
           </div>
         </div>
       </main>
