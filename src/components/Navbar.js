@@ -10,7 +10,7 @@ const Navbar = () => {
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
-
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -140,26 +140,49 @@ const Navbar = () => {
                 .map((category, index) => (
                   <li 
                     key={index} 
-                    className="nav-item dropdown"
+                    className="nav-item dropdown position-relative"
                     onMouseEnter={() => setActiveDropdown(index)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    <Link className="nav-link text-white dropdown-toggle" to="#">
-                      {category.categoryName}
-                    </Link>
-                    {activeDropdown === index && (
-                      <ul className="dropdown-menu show position-absolute mt-2">
-                        {categories
-                          .filter((sub) => sub.parentCategory?.categoryId === category.categoryId)
-                          .map((sub, subIndex) => (
-                            <li key={subIndex}>
-                              <Link className="dropdown-item" to={`/category/${sub.categoryName}`}>
+                    <div style={{ position: "relative" }}>
+                      <Link 
+                        className="nav-link text-white dropdown-toggle" 
+                        to={`/category/${category.categoryId}`}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {category.categoryName}
+                      </Link>
+
+                      {activeDropdown === index && (
+                        <div 
+                          className="bg-white shadow-lg rounded border position-absolute"
+                          style={{
+                            top: "100%",
+                            left: 0,
+                            zIndex: 1050,
+                            width: "200px",
+                          }}
+                        >
+                          {categories
+                            .filter((sub) => sub.parentCategory?.categoryId === category.categoryId)
+                            .map((sub, subIndex) => (
+                              <Link 
+                                key={subIndex}
+                                to={`/category/${sub.categoryId}`}
+                                className="d-block text-start fw-semibold text-dark px-3 py-2 text-decoration-none"
+                                style={{
+                                  whiteSpace: "nowrap",
+                                  transition: "background-color 0.2s",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f1f1f1"}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                              >
                                 {sub.categoryName}
                               </Link>
-                            </li>
-                          ))}
-                      </ul>
-                    )}
+                            ))}
+                        </div>
+                      )}
+                    </div>
                   </li>
                 ))
             ) : (

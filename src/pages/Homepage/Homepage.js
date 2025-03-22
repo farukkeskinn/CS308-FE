@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useSearchParams } from "react-router-dom";
-
+import SortIcon from '@mui/icons-material/Sort'; 
+import { Menu, MenuItem, Button } from "@mui/material"; 
 export default function HomePage() {
   const [products, setProducts] = useState([]); 
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchParams] = useSearchParams(); 
   const [favorites, setFavorites] = useState({});
+  const [sortOption, setSortOption] = useState("SORT");
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    setSortOption(""); 
+  }, []);
 
   useEffect(() => {
     axios.get("http://localhost:8080/api/products")
@@ -32,12 +41,49 @@ export default function HomePage() {
     }
   }, [searchParams, products]);
 
+  
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === "priceLow") return a.price - b.price;
+    if (sortOption === "priceHigh") return b.price - a.price;
+    if (sortOption === "ratingLow") return a.rating - b.rating;
+    if (sortOption === "ratingHigh") return b.rating - a.rating;
+    return 0;
+  });
+
+  
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = (option) => {
+    if (option) setSortOption(option);
+    setAnchorEl(null);
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <main className="flex-grow-1 container text-center py-5">
         <h1 className="fw-bold text-custom">Welcome to NEPTUNE</h1>
+        <div className="d-flex justify-content-end mb-3">
+        {/* ✅ Modern Sort Dropdown */}
+        <div className="sort-bar">
+          <Button
+            onClick={handleClick}
+            startIcon={<SortIcon />}
+            variant="contained"
+            className="sort-button"
+            style = {{backgroundColor: "#1f1c66", color: "white"}}
+          >
+            {sortOption ? ` ${sortOption}` : "Sort"}
+          </Button>
+          <Menu anchorEl={anchorEl} open={open} onClose={() => handleClose(null)}>
+              <MenuItem onClick={() => handleClose("Low to High Price")}>Low to High Price</MenuItem>
+              <MenuItem onClick={() => handleClose("High to Low Price")}>High to Low Price</MenuItem>
+              <MenuItem onClick={() => handleClose("Low to High Rating")}>Low to High Rating</MenuItem>
+              <MenuItem onClick={() => handleClose("High to Low Rating")}>High to Low Rating</MenuItem>
+          </Menu>
+        </div>
+      </div>
+
         <p className="fs-5 text-muted"
-          style={{ marginBottom: "30px" }} 
+          style={{ marginBottom: "25 px" }} 
         >
           Discover the latest and greatest in technology. Explore our range of high-quality products.
         </p>
@@ -45,8 +91,8 @@ export default function HomePage() {
         {/* Product List */}
         <div className="container mt-4">
           <div className="row g-4">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
+            {sortedProducts.length > 0 ? (
+              sortedProducts.map((product) => (
                 <div className="col-md-4" key={product.productId}>
                   <div className="card shadow p-3 text-center">
                     <div className="card-body">

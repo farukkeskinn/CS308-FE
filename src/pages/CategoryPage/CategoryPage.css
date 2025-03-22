@@ -1,0 +1,65 @@
+/* Home.css */
+
+/* Set the background color and font for the body */
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Custom text color */
+  .text-custom {
+    color: #1f1c66 !important; /* Navy Blue */
+  }
+  
+  /* Custom background color */
+  .bg-custom {
+    background-color: #1f1c66 !important; /* Navy Blue */
+  }
+  
+  /* Prevent the dropdown menu from disappearing */
+  .nav-item:hover .dropdown-menu,
+  .dropdown-menu:hover {
+    display: block !important;
+  }
+  
+  /* Smooth dropdown menu transition */
+  .dropdown-menu {
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  /* Make the dropdown visible when hovering */
+  .nav-item:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Keep the navbar background color fixed */
+  .navbar-custom {
+    background-color: #1f1c66 !important;
+  }
+  
+  /* Navbar link hover effect */
+  .navbar-nav .nav-link:hover {
+    color: #ffd700 !important; /* Gold hover effect */
+  }
+  
+  /* Dropdown menu styles */
+  .dropdown-menu {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Dropdown item hover effect */
+  .dropdown-item:hover {
+    background-color: #f8f9fa !important;
+  }
+  .category-title {
+    text-align: left;  /* Yazıyı sola hizala */
+    margin-left: 20px; /* Sol kenardan biraz boşluk bırak */
+    font-size: 28px;   /* Yazı boyutunu ayarla */
+    font-weight: bold; /* Kalın font */
+    padding: 10px 20px;
+  }
