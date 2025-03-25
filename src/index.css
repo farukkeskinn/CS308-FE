@@ -12,7 +12,7 @@ code {
 }
 
 .neptune-logo:hover {
-  transform: scale(1.1); /* %10 büyüme efekti */
+  transform: scale(1.1);
 }
 
 @keyframes bounce {

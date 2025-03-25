@@ -11,6 +11,18 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [reviewsVisible, setReviewsVisible] = useState(false);
 
+  const addToCart = (product) => {
+    const existingCart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const index = existingCart.findIndex((item) => item.productId === product.productId);
+  
+    if (index > -1) {
+      existingCart[index].quantity += 1;
+    } else {
+      existingCart.push({ ...product, quantity: 1 });
+    }
+  
+    localStorage.setItem('shoppingCart', JSON.stringify(existingCart));
+  };
   useEffect(() => {
     if (!productId) return;
 
@@ -80,16 +92,46 @@ export default function ProductPage() {
               </tbody>
             </table>
 
-            <h3 className="fw-bold text-primary mt-3">${product.price.toFixed(2)}</h3>
+            <h3 style={{ color: "#1f1c66", fontWeight: "bold", display: "flex", alignItems: "baseline" }}>
+              {(() => {
+                const priceParts = product.price.toFixed(2).split(".");
+                return (
+                  <>
+                    <span style={{ fontSize: "33px", fontWeight: "bold" }}>${priceParts[0]}</span>
+                    <sup style={{ fontSize: "20px", fontWeight: "normal" }}>.{priceParts[1]}</sup>
+                  </>
+                );
+              })()}
+            </h3>
 
             {/* Cart & Favorite Buttons */}
             <div className="d-flex gap-3 mt-3">
-              <button className="btn btn-primary shadow-lg" style={{ backgroundColor: "#1f1c66", borderColor: "#1f1c66" }}>
-                🛒 Add to Cart
-              </button>
+            <button 
+              className="btn btn-primary shadow-lg border-0 w-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
+              style={{ 
+                backgroundColor: "#1f1c66", 
+                height: "45px", 
+                borderRadius: "20px", 
+                fontWeight: "bold",
+                fontSize: "12px"
+              }}
+            >
+              🛒 Add to Cart
+            </button>
+
               <button 
                 className={`btn ${isFavorited ? "btn-success" : "btn-outline-danger"} shadow-lg`} 
                 onClick={() => setIsFavorited(!isFavorited)}
+                style={{ 
+                  height: "45px", 
+                  width: "100%",
+                  fontWeight: "bold",
+                  fontSize: "16px"
+                }}
               >
                 {isFavorited ? "✅ Added to Favorites" : "❤️ Add to Favorites"}
               </button>
@@ -160,10 +202,20 @@ export default function ProductPage() {
                 <div key={rec.productId} className="col-md-4">
                   <Link to={`/product/${rec.productId}`} className="text-decoration-none text-white">
                     <div className="card bg-light shadow-sm">
-                      <img src={rec.image_url} className="card-img-top" alt={rec.name} style={{ maxWidth: "120px", margin: "auto", padding: "10px" }} />
+                      <img src={rec.image_url} className="card-img-top" alt={rec.name} style={{ maxWidth: "120px", margin: "auto", padding: "10px", marginBottom: "10px" }} />
                       <div className="card-body text-center">
                         <h6 className="card-title text-dark">{rec.name}</h6>
-                        <p className="card-text text-primary">${rec.price.toFixed(2)}</p>
+                        <p style={{ color: "#1f1c66", fontWeight: "bold", display: "flex", justifyContent: "center", alignItems: "baseline" }}>
+                          {(() => {
+                            const priceParts = rec.price.toFixed(2).split(".");
+                            return (
+                              <>
+                                <span style={{ fontSize: "18px", fontWeight: "bold" }}>${priceParts[0]}</span>
+                                <sup style={{ fontSize: "12px", fontWeight: "normal" }}>.{priceParts[1]}</sup>
+                              </>
+                            );
+                          })()}
+                        </p>
                       </div>
                     </div>
                   </Link>

@@ -1,52 +1,51 @@
-/* Navbar Arkaplan Rengi */
+/* Navbar Background Color */
 .navbar-custom {
-    background-color: #1f1c66 !important; /* Lacivert */
-  }
-  
-  /* Navbar Linkleri */
-  .navbar-nav .nav-link {
-    color: white !important;
-    font-size: 14px;
-  }
-  
-  .navbar-nav .nav-link:hover {
-    color: #ffd700 !important; /* Sarı hover efekti */
-  }
-  
-  /* Dropdown Menü */
-  .dropdown-menu {
-    background-color: white;
-    border-radius: 5px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .dropdown-item {
-    color: black !important;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f8f9fa !important;
-  }
-  
-  /* Profil Dropdown */
-  .btn-secondary {
-    background-color: transparent !important;
-    border: none !important;
-    padding: 0;
-  }
-  
-  .dropdown-menu .dropdown-item {
-    font-size: 14px;
-  }
-  
-  .dropdown-menu .dropdown-item:hover {
-    background-color: #f8f9fa;
-  }
-  
-  /* Sepet İkonu */
-  .badge {
-    font-size: 10px;
-    min-width: 15px;
-    padding: 3px;
-  }
-  
+  background-color: #1f1c66 !important; /* Navy Blue */
+}
+
+/* Navbar Links */
+.navbar-nav .nav-link {
+  color: white !important;
+  font-size: 14px;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #efdb6d !important; /* Yellow hover effect */
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  color: black !important;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+/* Profile Dropdown */
+.btn-secondary {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0;
+}
+
+.dropdown-menu .dropdown-item {
+  font-size: 14px;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Cart Icon Badge */
+.badge {
+  font-size: 10px;
+  min-width: 15px;
+  padding: 3px;
+}
