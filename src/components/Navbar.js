@@ -25,6 +25,7 @@ const Navbar = () => {
         setLoading(false);
       });
 
+      
     if (token) {
       fetch("http://localhost:8080/api/user/profile", {
         headers: { Authorization: `Bearer ${token}` },
@@ -41,6 +42,15 @@ const Navbar = () => {
     }
   }, [token]);
 
+  useEffect(() => {
+    const updateCartCount = () => setCartCount(getCartTotalQuantity());
+  
+    updateCartCount(); // Initial call
+    window.addEventListener('storage', updateCartCount); // Listen to changes
+  
+    return () => window.removeEventListener('storage', updateCartCount);
+  }, []);
+
   const handleSearch = (query) => {
     if (query.trim() !== "") {
       navigate(`/?search=${encodeURIComponent(query)}`);
@@ -53,6 +63,13 @@ const Navbar = () => {
     setProfileMenuOpen(false);
     setCustomerName("");
   };
+
+  const getCartTotalQuantity = () => {
+    const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const [cartCount, setCartCount] = useState(getCartTotalQuantity());
 
   return (
     <>
@@ -119,7 +136,7 @@ const Navbar = () => {
             <Link to="/cart" className="text-white fs-5 position-relative">
               <FaShoppingCart />
               <span className="position-absolute top-0 start-100 translate-middle badge bg-danger p-1">
-                0
+              {cartCount}
               </span>
             </Link>
           </div>

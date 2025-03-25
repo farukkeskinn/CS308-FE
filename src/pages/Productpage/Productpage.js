@@ -11,6 +11,18 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [reviewsVisible, setReviewsVisible] = useState(false);
 
+  const addToCart = (product) => {
+    const existingCart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const index = existingCart.findIndex((item) => item.productId === product.productId);
+  
+    if (index > -1) {
+      existingCart[index].quantity += 1;
+    } else {
+      existingCart.push({ ...product, quantity: 1 });
+    }
+  
+    localStorage.setItem('shoppingCart', JSON.stringify(existingCart));
+  };
   useEffect(() => {
     if (!productId) return;
 
@@ -94,19 +106,23 @@ export default function ProductPage() {
 
             {/* Cart & Favorite Buttons */}
             <div className="d-flex gap-3 mt-3">
-              <button 
-                className="btn btn-primary shadow-lg" 
-                style={{ 
-                  backgroundColor: "#1f1c66", 
-                  borderColor: "#1f1c66",
-                  height: "45px", 
-                  width: "100%",
-                  fontWeight: "bold",
-                  fontSize: "16px"
-                }}
-              >
-                🛒 Add to Cart
-              </button>
+            <button 
+              className="btn btn-primary shadow-lg border-0 w-50"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
+              style={{ 
+                backgroundColor: "#1f1c66", 
+                height: "45px", 
+                borderRadius: "20px", 
+                fontWeight: "bold",
+                fontSize: "12px"
+              }}
+            >
+              🛒 Add to Cart
+            </button>
+
               <button 
                 className={`btn ${isFavorited ? "btn-success" : "btn-outline-danger"} shadow-lg`} 
                 onClick={() => setIsFavorited(!isFavorited)}

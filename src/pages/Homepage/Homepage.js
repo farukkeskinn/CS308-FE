@@ -50,6 +50,18 @@ export default function HomePage() {
     return 0;
   });
 
+  const addToCart = (product) => {
+    const existingCart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    const index = existingCart.findIndex((item) => item.productId === product.productId);
+  
+    if (index > -1) {
+      existingCart[index].quantity += 1;
+    } else {
+      existingCart.push({ ...product, quantity: 1 });
+    }
+  
+    localStorage.setItem('shoppingCart', JSON.stringify(existingCart));
+  };
   
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = (option) => {
@@ -133,22 +145,23 @@ export default function HomePage() {
                         </p>
                       </Link>
                       <div className="d-flex justify-content-center gap-3 mt-3">
-                        <button 
-                          className="btn btn-primary shadow-lg border-0 w-50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log(`Added ${product.name} to cart`);
-                          }}
-                          style={{ 
-                            backgroundColor: "#1f1c66", 
-                            height: "45px", 
-                            borderRadius: "20px", 
-                            fontWeight: "bold",
-                            fontSize: "12px"
-                          }}
-                        >
-                          🛒 Add to Cart
-                        </button>
+                      <button 
+                        className="btn btn-primary shadow-lg border-0 w-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(product);
+                        }}
+                        style={{ 
+                          backgroundColor: "#1f1c66", 
+                          height: "45px", 
+                          borderRadius: "20px", 
+                          fontWeight: "bold",
+                          fontSize: "12px"
+                        }}
+                      >
+                        🛒 Add to Cart
+                      </button>
+
                         
                         <button 
                           className={`btn ${favorites[product.productId] ? "btn-success" : "btn-outline-danger"} shadow-lg w-50`} 
