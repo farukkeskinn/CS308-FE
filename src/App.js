@@ -9,31 +9,33 @@ import Productpage from "./pages/Productpage/Productpage";
 import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
+import { CartProvider } from "./context/CartContext";
+
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="*"
-          element={
-            <>
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Homepage />} />
-                <Route path="/product/:productId" element={<Productpage />} />
-                <Route path="/category/:categoryId" element={<CategoryPage />} /> {/* ✅ Yeni Route eklendi */}
-                <Route path="/cart" element={<ShoppingCart />} />
-
-              </Routes>
-            </>
-          }
-        />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <CartProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Homepage />} />
+                  <Route path="/product/:productId" element={<Productpage />} />
+                  <Route path="/category/:categoryId" element={<CategoryPage />} />
+                  <Route path="/cart" element={<ShoppingCart />} />
+                </Routes>
+              </>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 }
-
 export default App;

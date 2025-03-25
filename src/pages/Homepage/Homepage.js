@@ -3,6 +3,8 @@ import axios from "axios";
 import { Link, useSearchParams } from "react-router-dom";
 import SortIcon from '@mui/icons-material/Sort'; 
 import { Menu, MenuItem, Button } from "@mui/material"; 
+import { useCartContext } from "../../context/CartContext";
+
 export default function HomePage() {
   const [products, setProducts] = useState([]); 
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -50,17 +52,20 @@ export default function HomePage() {
     return 0;
   });
 
+  const { setCartItems } = useCartContext();
+
   const addToCart = (product) => {
-    const existingCart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
-    const index = existingCart.findIndex((item) => item.productId === product.productId);
-  
+    const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+    const index = cart.findIndex((item) => item.productId === product.productId);
+
     if (index > -1) {
-      existingCart[index].quantity += 1;
+      cart[index].quantity += 1;
     } else {
-      existingCart.push({ ...product, quantity: 1 });
+      cart.push({ ...product, quantity: 1 });
     }
-  
-    localStorage.setItem('shoppingCart', JSON.stringify(existingCart));
+
+    localStorage.setItem("shoppingCart", JSON.stringify(cart));
+    setCartItems(cart);  // ✅ THIS IS WHAT UPDATES THE BUBBLE INSTANTLY
   };
   
   const handleClick = (event) => setAnchorEl(event.currentTarget);
@@ -69,6 +74,20 @@ export default function HomePage() {
     setAnchorEl(null);
   };
 
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = (message) => {
+    setToasts((prev) => {
+      const updated = [...prev, { id: Date.now(), message }];
+      return updated.slice(-3); // ✅ Keep max 3 toasts
+    });
+  
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.slice(1)); // ✅ Remove the oldest toast
+    }, 3000);
+  };
+  
   return (
     <div className="d-flex flex-column min-vh-100">
       <main className="flex-grow-1 container text-center py-5">
@@ -150,6 +169,7 @@ export default function HomePage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(product);
+                          showToast('✅ Item added to cart');
                         }}
                         style={{ 
                           backgroundColor: "#1f1c66", 
@@ -205,6 +225,20 @@ export default function HomePage() {
       <footer className="footer bg-dark text-white text-center py-3 mt-auto">
         &copy; 2025 Neptune. All rights reserved.
       </footer>
+      {/* ✅ Toast Container - Bottom Right */}
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        zIndex: 9999,
+        maxWidth: '300px'
+      }}>
+        {toasts.map((toast) => (
+          <div key={toast.id} className="alert alert-success shadow fade show mb-2" role="alert">
+            {toast.message}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

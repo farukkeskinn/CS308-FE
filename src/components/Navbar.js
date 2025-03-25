@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSignInAlt, FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import SearchBar from "./ui/SearchBar"; 
+import { useCartContext } from "../context/CartContext";  // ✅ Use the context
 
 const Navbar = () => {  
   const [categories, setCategories] = useState([]); 
@@ -11,6 +12,7 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   
+  const { getCartTotalQuantity } = useCartContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,14 +44,6 @@ const Navbar = () => {
     }
   }, [token]);
 
-  useEffect(() => {
-    const updateCartCount = () => setCartCount(getCartTotalQuantity());
-  
-    updateCartCount(); // Initial call
-    window.addEventListener('storage', updateCartCount); // Listen to changes
-  
-    return () => window.removeEventListener('storage', updateCartCount);
-  }, []);
 
   const handleSearch = (query) => {
     if (query.trim() !== "") {
@@ -63,13 +57,6 @@ const Navbar = () => {
     setProfileMenuOpen(false);
     setCustomerName("");
   };
-
-  const getCartTotalQuantity = () => {
-    const cart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
-    return cart.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const [cartCount, setCartCount] = useState(getCartTotalQuantity());
 
   return (
     <>
@@ -136,7 +123,7 @@ const Navbar = () => {
             <Link to="/cart" className="text-white fs-5 position-relative">
               <FaShoppingCart />
               <span className="position-absolute top-0 start-100 translate-middle badge bg-danger p-1">
-              {cartCount}
+                {getCartTotalQuantity()}
               </span>
             </Link>
           </div>
