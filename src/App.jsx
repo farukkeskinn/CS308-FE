@@ -8,6 +8,7 @@ import Register from "./pages/Register/Register";
 import Productpage from "./pages/Productpage/Productpage";
 import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
+import SearchPage from "./pages/SearchPage/SearchPage";
 
 function App() {
   return (
@@ -21,8 +22,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<Homepage />} />
                 <Route path="/product/:productId" element={<Productpage />} />
-                <Route path="/category/:categoryId" element={<CategoryPage />} /> {/* ✅ Yeni Route eklendi */}
-
+                <Route path="/category/:categoryId" element={<CategoryPage />} />
+                <Route path="/search" element={<SearchPage />} />
               </Routes>
             </>
           }
