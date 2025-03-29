@@ -169,6 +169,15 @@ export default function SearchPage() {
                           : product.description}
                       </Typography>
                       <Typography
+                        variant="body2"
+                        sx={{ mt: 1 }}
+                        color={product.stock === 0 ? "error" : "text.secondary"}
+                      >
+                        {product.stock === 0
+                          ? "Out of Stock"
+                          : `In Stock: ${product.stock}`}
+                      </Typography>
+                      <Typography
                         sx={{
                           color: "#1f1c66",
                           fontWeight: "bold",
@@ -194,6 +203,7 @@ export default function SearchPage() {
                     fullWidth
                     variant="contained"
                     startIcon={<ShoppingCart />}
+                    disabled={product.stock === 0}
                     onClick={() => {
                       setCartClicked((prev) => ({ ...prev, [product.productId]: true }));
                       addToCart(product);
@@ -216,7 +226,7 @@ export default function SearchPage() {
                       },
                     }}
                   >
-                    Add to Cart
+                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </Card>
               </Grid>

@@ -78,7 +78,6 @@ export default function ShoppingCart() {
 
   return (
     <Box sx={{ py: 5, px: { xs: 2, md: 10 } }}>
-      {/* Başlık Kutusu */}
       <Paper
         elevation={3}
         sx={{ backgroundColor: "white", p: 4, textAlign: "center", mb: 4 }}
@@ -89,7 +88,6 @@ export default function ShoppingCart() {
       </Paper>
 
       <Grid container spacing={4}>
-        {/* Lacivert Arka Planlı Kutucuk */}
         <Grid item xs={12} md={8}>
           <Box sx={{ backgroundColor: "#1f1c66", p: 3, borderRadius: 2 }}>
             {cartItems.length === 0 ? (
@@ -249,7 +247,6 @@ export default function ShoppingCart() {
         </Grid>
       </Grid>
 
-      {/* Popup Dialog on Unauthorized Checkout */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Login Required</DialogTitle>
         <DialogContent>

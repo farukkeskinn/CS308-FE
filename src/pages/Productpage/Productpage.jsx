@@ -139,13 +139,24 @@ export default function ProductPage() {
                     fullWidth
                     variant="contained"
                     startIcon={<ShoppingCart />}
+                    disabled={product.quantity === 0} // 🔒 Sepete ekleme devre dışı
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(product);
+                      setCartClicked(true);
+                      setTimeout(() => setCartClicked(false), 300);
                     }}
                     sx={{
-                      backgroundColor: cartClicked ? "#2ecc71" : "#ffffff",
-                      color: cartClicked ? "white" : "#1f1c66",
+                      backgroundColor: product.quantity === 0
+                        ? "#ccc"
+                        : cartClicked
+                        ? "#2ecc71"
+                        : "#ffffff",
+                      color: product.quantity === 0
+                        ? "#666"
+                        : cartClicked
+                        ? "white"
+                        : "#1f1c66",
                       borderColor: "#1f1c66",
                       height: "45px",
                       fontWeight: "bold",
@@ -153,11 +164,16 @@ export default function ProductPage() {
                       borderRadius: "10px",
                       transition: "background-color 0.3s ease",
                       "&:hover": {
-                        backgroundColor: cartClicked ? "#27ae60" : "#e1e1ff",
+                        backgroundColor:
+                          product.quantity === 0
+                            ? "#ccc"
+                            : cartClicked
+                            ? "#27ae60"
+                            : "#e1e1ff",
                       },
                     }}
                   >
-                    Add to Cart
+                    {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                   <Button
                     variant="contained"

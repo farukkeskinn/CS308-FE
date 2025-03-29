@@ -141,6 +141,15 @@ export default function HomePage() {
                           : product.description}
                       </Typography>
                       <Typography
+                        variant="body2"
+                        sx={{ mt: 1 }}
+                        color={product.stock === 0 ? "error" : "text.secondary"}
+                      >
+                        {product.stock === 0
+                          ? "Out of Stock"
+                          : `In Stock: ${product.stock}`}
+                      </Typography>
+                      <Typography
                         sx={{
                           color: "#1f1c66",
                           fontWeight: "bold",
@@ -162,15 +171,18 @@ export default function HomePage() {
                     </CardContent>
                   </CardActionArea>
 
-                  {/* Add to Cart Button */}
                   <Button
                     fullWidth
                     variant="contained"
                     startIcon={<ShoppingCart />}
+                    disabled={product.stock === 0}
                     onClick={() => {
                       setCartClicked((prev) => ({ ...prev, [product.productId]: true }));
-                      setTimeout(() => setCartClicked((prev) => ({ ...prev, [product.productId]: false })), 300);
                       addToCart(product);
+                      setTimeout(() =>
+                        setCartClicked((prev) => ({ ...prev, [product.productId]: false })),
+                        300
+                      );
                     }}
                     sx={{
                       mt: "auto",
@@ -186,7 +198,7 @@ export default function HomePage() {
                       },
                     }}
                   >
-                    Add to Cart
+                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </Card>
               </Grid>
