@@ -15,8 +15,21 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const addToCart = (product) => {
+    const updatedCart = [...cartItems];
+    const index = updatedCart.findIndex((item) => item.productId === product.productId);
+
+    if (index > -1) {
+      updatedCart[index].quantity += 1;
+    } else {
+      updatedCart.push({ ...product, quantity: 1 });
+    }
+
+    setCartItems(updatedCart);
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity }}>
+    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart }}>
       {children}
     </CartContext.Provider>
   );
