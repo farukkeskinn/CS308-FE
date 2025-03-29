@@ -9,29 +9,34 @@ import Productpage from "./pages/Productpage/Productpage";
 import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import SearchPage from "./pages/SearchPage/SearchPage";
+import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
+import { CartProvider } from "./context/CartContext"; // ← Burayı ekle
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="*"
-          element={
-            <>
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Homepage />} />
-                <Route path="/product/:productId" element={<Productpage />} />
-                <Route path="/category/:categoryId" element={<CategoryPage />} />
-                <Route path="/search" element={<SearchPage />} />
-              </Routes>
-            </>
-          }
-        />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <CartProvider> {/* ← Burada tüm uygulamayı sarmalıyoruz */}
+      <Router>
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <>
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Homepage />} />
+                  <Route path="/product/:productId" element={<Productpage />} />
+                  <Route path="/category/:categoryId" element={<CategoryPage />} />
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/cart" element={<ShoppingCart />} />
+                </Routes>
+              </>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </Router>
+    </CartProvider>
   );
 }
 

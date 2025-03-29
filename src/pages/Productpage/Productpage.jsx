@@ -23,6 +23,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
+import { useCartContext } from "../../context/CartContext";
 
 export default function ProductPage() {
   const { productId } = useParams();
@@ -32,12 +33,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [reviewsVisible, setReviewsVisible] = useState(false);
   const [cartClicked, setCartClicked] = useState(false);
-
-  const handleCartClick = () => {
-    setCartClicked(true);
-    console.log(`Added ${product.name} to cart`);
-    setTimeout(() => setCartClicked(false), 300);
-  };
+  const { addToCart } = useCartContext();
 
   useEffect(() => {
     if (!productId) return;
@@ -143,7 +139,10 @@ export default function ProductPage() {
                     fullWidth
                     variant="contained"
                     startIcon={<ShoppingCart />}
-                    onClick={handleCartClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
                     sx={{
                       backgroundColor: cartClicked ? "#2ecc71" : "#ffffff",
                       color: cartClicked ? "white" : "#1f1c66",

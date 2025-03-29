@@ -19,6 +19,7 @@ import SortIcon from "@mui/icons-material/Sort";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
+import { useCartContext } from "../../context/CartContext";
 
 export default function CategoryPage() {
   const { categoryId } = useParams();
@@ -28,6 +29,7 @@ export default function CategoryPage() {
   const [sortOption, setSortOption] = useState(null);
   const [favorites, setFavorites] = useState({});
   const [cartClicked, setCartClicked] = useState({});
+  const { addToCart } = useCartContext();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -206,7 +208,7 @@ export default function CategoryPage() {
                     startIcon={<ShoppingCart />}
                     onClick={() => {
                       setCartClicked((prev) => ({ ...prev, [product.productId]: true }));
-                      console.log(`Added ${product.name} to cart`);
+                      addToCart(product);
                       setTimeout(() =>
                         setCartClicked((prev) => ({ ...prev, [product.productId]: false })),
                         300

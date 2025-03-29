@@ -5,6 +5,8 @@ import LoginIcon from '@mui/icons-material/Login';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchBar from "./SearchBar";
 import { Box } from "@mui/material";
+import Badge from "@mui/material/Badge";
+import { useCartContext } from "../context/CartContext"; 
 
 const Navbar = () => {
   const [categories, setCategories] = useState([]);
@@ -13,6 +15,7 @@ const Navbar = () => {
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const { getCartTotalQuantity } = useCartContext();
 
   const location = useLocation();
   
@@ -28,6 +31,7 @@ const Navbar = () => {
         setLoading(false);
       });
 
+      
     if (token) {
       fetch("http://localhost:8080/api/user/profile", {
         headers: { Authorization: `Bearer ${token}` },
@@ -168,11 +172,26 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
-            <Link to="/cart" className="text-white fs-5 position-relative">
-              <ShoppingCartIcon fontSize="small" />
-              <span className="position-absolute top-0 start-100 translate-middle badge bg-danger p-1">
-                0
-              </span>
+            <Link to="/cart" className="text-white fs-5">
+              <Badge
+                badgeContent={getCartTotalQuantity()}
+                color="error"
+                showZero
+                overlap="rectangular"
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                sx={{
+                  "& .MuiBadge-badge": {
+                    fontSize: "0.75rem",
+                    height: 18,
+                    minWidth: 18,
+                  },
+                }}
+              >
+                <ShoppingCartIcon fontSize="medium" />
+              </Badge>
             </Link>
           </div>
         </div>

@@ -19,6 +19,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import FavoriteBorder from '@mui/icons-material/FavoriteBorder';
 import Favorite from '@mui/icons-material/Favorite';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
+import { useCartContext } from "../../context/CartContext";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]); 
@@ -27,19 +28,12 @@ export default function HomePage() {
   const [cartClicked, setCartClicked] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-
-  useEffect(() => {
-    setSortOption(""); 
-  }, []);
+  const { addToCart } = useCartContext();
 
   useEffect(() => {
     axios.get("http://localhost:8080/api/products")
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => {
-        console.error("API Error:", error);
-      });
+      .then((response) => setProducts(response.data))
+      .catch((error) => console.error("API Error:", error));
   }, []);
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -175,8 +169,8 @@ export default function HomePage() {
                     startIcon={<ShoppingCart />}
                     onClick={() => {
                       setCartClicked((prev) => ({ ...prev, [product.productId]: true }));
-                      console.log(`Added ${product.name} to cart`);
                       setTimeout(() => setCartClicked((prev) => ({ ...prev, [product.productId]: false })), 300);
+                      addToCart(product);
                     }}
                     sx={{
                       mt: "auto",

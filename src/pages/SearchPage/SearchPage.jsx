@@ -20,6 +20,7 @@ import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
+import { useCartContext } from "../../context/CartContext";
 
 export default function SearchPage() {
   const [products, setProducts] = useState([]);
@@ -31,6 +32,7 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("search") || "";
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCartContext();
 
   useEffect(() => {
     if (!query) {
@@ -194,6 +196,7 @@ export default function SearchPage() {
                     startIcon={<ShoppingCart />}
                     onClick={() => {
                       setCartClicked((prev) => ({ ...prev, [product.productId]: true }));
+                      addToCart(product);
                       setTimeout(() =>
                         setCartClicked((prev) => ({ ...prev, [product.productId]: false })),
                         300
