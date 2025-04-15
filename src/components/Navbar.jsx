@@ -142,16 +142,22 @@ const Navbar = () => {
                     className="position-absolute bg-white shadow rounded border text-center"
                     style={dropdownBoxStyle}
                   >
-                    <Link
-                      to="/profile"
-                      className="d-block text-decoration-none text-dark fw-bold py-2"
-                    >
-                      View Profile
-                    </Link>
-                    <button
-                      className="btn btn-danger w-100 py-2"
-                      onClick={handleLogout}
-                    >
+                    {localStorage.getItem("role") === "SALES_MANAGER" || localStorage.getItem("role") === "PRODUCT_MANAGER" ? (
+                      <Link
+                        to={localStorage.getItem("role") === "SALES_MANAGER" ? "/salesdashboard" : "/productdashboard"}
+                        className="d-block text-decoration-none text-dark fw-bold py-2"
+                      >
+                        Admin Interface
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/profile"
+                        className="d-block text-decoration-none text-dark fw-bold py-2"
+                      >
+                        View Profile
+                      </Link>
+                    )}
+                    <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
                       Logout
                     </button>
                   </div>

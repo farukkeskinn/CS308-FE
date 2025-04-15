@@ -64,6 +64,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         localStorage.setItem("jwtToken", data.token);
+        localStorage.setItem("role", data.role);
         navigate("/");
       } else {
         setLoginError(true);

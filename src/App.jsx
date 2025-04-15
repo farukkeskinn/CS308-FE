@@ -10,11 +10,12 @@ import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
-import { CartProvider } from "./context/CartContext"; // ← Burayı ekle
+import { CartProvider } from "./context/CartContext";
+import SalesDashboard from "./pages/SalesDashboard/SalesDashboard";
 
 function App() {
   return (
-    <CartProvider> {/* ← Burada tüm uygulamayı sarmalıyoruz */}
+    <CartProvider>
       <Router>
         <Routes>
           <Route
@@ -28,6 +29,7 @@ function App() {
                   <Route path="/category/:categoryId" element={<CategoryPage />} />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/cart" element={<ShoppingCart />} />
+                  <Route path="/salesdashboard" element={<SalesDashboard />} />
                 </Routes>
               </>
             }
