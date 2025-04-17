@@ -12,6 +12,11 @@ import SearchPage from "./pages/SearchPage/SearchPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
 import { CartProvider } from "./context/CartContext";
 import SalesDashboard from "./pages/SalesDashboard/SalesDashboard";
+import ProductDashboard from './pages/ProductDashboard/ProductDashboard';
+import NewProductForm from "./pages/ProductDashboard/NewProductForm";
+import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
+import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
+import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
 
 function App() {
   return (
@@ -30,6 +35,11 @@ function App() {
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/cart" element={<ShoppingCart />} />
                   <Route path="/salesdashboard" element={<SalesDashboard />} />
+                  <Route path="/productdashboard" element={<ProductDashboard />} />
+                  <Route path="/productdashboard/new-product" element={<NewProductForm />} />
+                  <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
+                  <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
+                  <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
                 </Routes>
               </>
             }
