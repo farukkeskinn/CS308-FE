@@ -85,9 +85,6 @@ export default function ProductPage() {
   
         <Box mt={1} display="flex" alignItems="center" gap={2}>
           <Typography fontWeight="bold">⭐ {averageRating}</Typography>
-          <Typography>
-            {totalReviews > 0 ? `${totalReviews} reviews` : "No Reviews Yet"}
-          </Typography>
         </Box>
   
         <Grid container spacing={4} mt={3}>
@@ -317,22 +314,26 @@ export default function ProductPage() {
               <Typography variant="subtitle1" fontWeight="bold">
                 Customer Reviews
               </Typography>
-              {totalReviews > 0 ? (
-                <ul className="list-group mt-2">
-                  {product.reviews.map((review, index) => (
-                    <li key={index} className="list-group-item p-2">
-                      <span className="fw-bold">
-                        {"⭐".repeat(review.rating)}
-                      </span>{" "}
-                      - {review.comment || "No Comment"}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No Comments Yet.
-                </Typography>
-              )}
+
+              {(() => {
+                const acceptedReviews = product.reviews.filter(
+                  (review) => review.approvalStatus === 'approved'
+                );
+
+                return acceptedReviews.length > 0 ? (
+                  <ul className="list-group mt-2">
+                    {acceptedReviews.map((review, index) => (
+                      <li key={index} className="list-group-item p-2">
+                        {review.comment}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No Comments Yet.
+                  </Typography>
+                );
+              })()}
             </div>
           </Collapse>
         </Paper>
