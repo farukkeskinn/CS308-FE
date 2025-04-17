@@ -1,3 +1,4 @@
+// src/pages/ProductDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, CircularProgress, Table, TableBody,
@@ -65,8 +66,17 @@ const ProductDashboard = () => {
           variant="contained"
           color="error"
           onClick={() => navigate("/productdashboard/categories")}
+          style={{ marginRight: '1rem' }}
         >
           Manage Categories
+        </Button>
+        {/* NEW: Manage Reviews Button */}
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => navigate("/productdashboard/reviews")}
+        >
+          Manage Reviews
         </Button>
       </Box>
 
