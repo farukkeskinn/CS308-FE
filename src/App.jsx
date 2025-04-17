@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React from "react";
+
 import Homepage from "./pages/Homepage/Homepage";
 import LoginPage from "./pages/Login/LoginPage";
 import Register from "./pages/Register/Register";
@@ -14,7 +15,8 @@ import SearchPage from "./pages/SearchPage/SearchPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
 import { CartProvider } from "./context/CartContext"; // ← Burayı ekle
 import OrderHistory from "./pages/Orderpage/OrderPage";
-
+import CheckoutPage from "./pages/CheckoutPage/CheckoutPage"; // Doğru
+import ThankYouPage from "./pages/ThankYouPage/ThankYouPage"; // Doğru
 
 function App() {
   useEffect(() => {
@@ -40,7 +42,7 @@ function App() {
   
 
   return (
-    <CartProvider> {/* ← Burada tüm uygulamayı sarmalıyoruz */}
+    <CartProvider>
       <Router>
         <Routes>
           <Route
@@ -56,6 +58,8 @@ function App() {
                   <Route path="/cart" element={<ShoppingCart />} />
                   <Route path="/orderpage" element={<OrderHistory />} />
                   <Route path="/orderpage/:orderId" element={<OrderHistory />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/thank-you" element={<ThankYouPage />} />
                 </Routes>
               </>
             }
