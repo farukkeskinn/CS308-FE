@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
+
 import {
   Box,
   Typography,
@@ -40,18 +41,82 @@ export default function ShoppingCart() {
 
   const hasOutOfStockItem = cartItems.some((item) => item.stock === 0);
 
-  const updateQuantity = (index, newQuantity) => {
+  const increaseQuantity = async (index, newQuantity) => {
     const updatedCart = [...cartItems];
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+  
+    // 🔐 Logged-in user: update DB
+    if (jwtToken && customerId) {
+      try {
+        const product = updatedCart[index]; // productId is required
+        await fetch("http://localhost:8080/api/cart-management/add-item", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify({
+            customerId,
+            productId: product.productId,
+            quantity: 1, // increase by 1
+          }),
+        });
+      } catch (error) {
+        console.error("Error increasing quantity on server:", error);
+      }
+    }
+  
+    // 🧠 Local cart update
     if (newQuantity === 0) {
       updatedCart.splice(index, 1);
     } else {
       updatedCart[index].quantity = newQuantity;
     }
+  
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
+  
 
+  const decreaseQuantity = async (index, newQuantity) => {
+    const updatedCart = [...cartItems];
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+  
+    // 🔐 Logged-in user: update DB
+    if (jwtToken && customerId) {
+      try {
+        const item = updatedCart[index];
+        await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify({
+            itemId: item.shoppingCartItemId, // must be from cart item
+            quantity: 1,
+          }),
+        });
+      } catch (error) {
+        console.error("Error decreasing quantity on server:", error);
+      }
+    }
+  
+    // 🧠 Local cart update
+    if (newQuantity === 0) {
+      updatedCart.splice(index, 1);
+    } else {
+      updatedCart[index].quantity = newQuantity;
+    }
+  
+    setCartItems(updatedCart);
+    localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
+    updateContextCart(updatedCart);
+  };
+  
   const removeItemFromCart = (index) => {
     const updatedCart = [...cartItems];
     updatedCart.splice(index, 1);
@@ -60,11 +125,55 @@ export default function ShoppingCart() {
     updateContextCart(updatedCart);
   };
 
-  const emptyCart = () => {
-    setCartItems([]);
-    localStorage.removeItem("shoppingCart");
-    updateContextCart([]);
+
+
+  const emptyCart = async () => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+
+    if (!jwtToken || !customerId) {
+      // Guest fallback
+      setCartItems([]);
+      localStorage.removeItem("shoppingCart");
+      return;
+    }
+
+    try {
+      // Step 1: Fetch cart to get cartId
+      const cartRes = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+
+      if (!cartRes.ok) {
+        console.error("Failed to fetch cart to clear:", cartRes.status);
+        return;
+      }
+
+      const cart = await cartRes.json();
+      const cartId = cart.cartId;
+
+      // Step 2: Send DELETE request
+      const deleteRes = await fetch(`http://localhost:8080/api/cart-management/clear-cart/${cartId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+
+      if (deleteRes.ok) {
+        // Step 3: Clear context + localStorage
+        setCartItems([]);
+        localStorage.removeItem("shoppingCart");
+      } else {
+        console.error("Failed to clear cart:", deleteRes.status);
+      }
+    } catch (err) {
+      console.error("Cart clear error:", err);
+    }
   };
+
 
   const handleCheckout = async () => {
     if (!localStorage.getItem("jwtToken")) {
@@ -231,7 +340,7 @@ export default function ShoppingCart() {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => updateQuantity(idx, item.quantity - 1)}
+                          onClick={() => decreaseQuantity(idx, item.quantity - 1)}
                           disabled={item.quantity === 1}
                         >
                           -
@@ -240,7 +349,7 @@ export default function ShoppingCart() {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => updateQuantity(idx, item.quantity + 1)}
+                          onClick={() => increaseQuantity(idx, item.quantity + 1)}
                         >
                           +
                         </Button>

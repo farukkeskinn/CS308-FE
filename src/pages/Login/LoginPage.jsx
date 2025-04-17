@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/AuthNavbar";
+import { useCartContext } from "../../context/CartContext";
 import {
   TextField,
   IconButton,
@@ -16,10 +17,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [emailError] = useState("");
+  const [passwordError ] = useState("");
   const [loginError, setLoginError] = useState("");
-  
+  const { setCartItems } = useCartContext();
   const navigate = useNavigate();
   const mainColor = "#1f1c66";
 
@@ -31,50 +32,111 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setEmailError("");
-    setPasswordError("");
-    setLoginError(false);
 
-    let hasError = false;
-
-    if (!email) {
-      setEmailError("Email is required");
-      hasError = true;
-      return;
-    }
-  
-    if (!password) {
-      setPasswordError("Password is required");
-      hasError = true;
-      return;
-    }
-
-    if (hasError) return;
-
+  const fetchUserCart = async (customerId, jwtToken) => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
       });
-
-      const data = await response.json();
-      console.log("Login response data:", data);
-
-
-      if (response.ok) {
-        localStorage.setItem("jwtToken", data.token);
-        localStorage.setItem("customerId", data.customerId);
-        navigate("/");
+  
+      if (!response.ok) {
+        console.error("Cart fetch failed with status:", response.status);
+        return;
+      }
+  
+      const result = await response.json();
+      console.log("📦 DB'den gelen sepet:", result);
+  
+      // ❗ ÖNEMLİ: result.shoppingCartItems'e göre context'i güncelle
+      if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
+        const formattedCart = result.shoppingCartItems.map(item => ({
+          productId: item.product.productId,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          // image: item.product.image, // image yoksa yorumda kalabilir
+          // stock: item.product.stock, // ihtiyaç varsa açılır
+        }));
+  
+        setCartItems(formattedCart);
+        localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
       } else {
-        setLoginError(true);
+        console.warn("Beklenen shoppingCartItems yok:", result);
       }
     } catch (error) {
-      setLoginError(true);
+      console.error("fetchUserCart hatası:", error);
     }
   };
+  
+
+const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
+  try {
+    const response = await fetch("http://localhost:8080/api/cart-management/merge-guest-cart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({
+        customerId,
+        guestItems: guestCart.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.clearGuestCart) {
+      localStorage.removeItem("shoppingCart");
+      setCartItems([]);
+      await fetchUserCart(customerId, jwtToken);
+    }
+  } catch (err) {
+    console.error("Merge işlemi başarısız:", err);
+  }
+};
+
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoginError(false);
+
+  try {
+    const response = await fetch("http://localhost:8080/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    console.log("Login response data:", data);
+
+    if (response.ok) {
+      localStorage.setItem("jwtToken", data.token);
+      localStorage.setItem("customerId", data.customerId);
+      localStorage.setItem("userRole", data.role);
+
+      const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+      if (guestCart.length > 0) {
+        await mergeGuestCart(data.customerId, data.token, guestCart);
+      } else {
+        await fetchUserCart(data.customerId, data.token);
+      }
+
+      navigate("/");
+    } else {
+      setLoginError(true);
+    }
+  } catch (error) {
+    console.error("Login hatası:", error);
+    setLoginError(true);
+  }
+};
+
 
   return (
     <div className="d-flex flex-column min-vh-100">
