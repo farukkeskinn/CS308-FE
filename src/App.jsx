@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import React from "react";
+
 import Homepage from "./pages/Homepage/Homepage";
 import LoginPage from "./pages/Login/LoginPage";
 import Register from "./pages/Register/Register";
@@ -10,11 +11,13 @@ import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
-import { CartProvider } from "./context/CartContext"; // ← Burayı ekle
+import { CartProvider } from "./context/CartContext";
+import CheckoutPage from "./pages/CheckoutPage/CheckoutPage"; // Doğru
+import ThankYouPage from "./pages/ThankYouPage/ThankYouPage"; // Doğru
 
 function App() {
   return (
-    <CartProvider> {/* ← Burada tüm uygulamayı sarmalıyoruz */}
+    <CartProvider>
       <Router>
         <Routes>
           <Route
@@ -28,6 +31,8 @@ function App() {
                   <Route path="/category/:categoryId" element={<CategoryPage />} />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/cart" element={<ShoppingCart />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/thank-you" element={<ThankYouPage />} />
                 </Routes>
               </>
             }
