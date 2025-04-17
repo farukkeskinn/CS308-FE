@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate} from "react-router-dom";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginIcon from '@mui/icons-material/Login';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -17,6 +17,7 @@ const Navbar = () => {
   const [customerName, setCustomerName] = useState("");
   const { getCartTotalQuantity } = useCartContext();
 
+  const navigate = useNavigate();
   const location = useLocation();
   
   useEffect(() => {
@@ -51,6 +52,7 @@ const Navbar = () => {
     setToken(null);
     setProfileMenuOpen(false);
     setCustomerName("");
+    navigate("/");
   };
 
   const navTopStyle = {
