@@ -85,15 +85,18 @@ export default function ShoppingCart() {
 
       console.log("Sending to backend:", {
         items: itemsToSend,
+        customerId: localStorage.getItem("customerId"),
+        cart_status: "IN CART",
         cartStatus: "IN CART",
-        customer_id: localStorage.getItem("customerId")
+
+        
       });
       await axios.post(
         "http://localhost:8080/api/cart-management/add-item",
         {
-          customer_id: localStorage.getItem("customerId"),
-          cartStatus: "IN CART",
+          customerId: localStorage.getItem("customerId"),
           items: itemsToSend, 
+          cart_status: "IN CART"
         }, // Adjust if your backend expects a different structure
         {
           headers: {

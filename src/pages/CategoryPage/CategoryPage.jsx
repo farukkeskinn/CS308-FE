@@ -50,7 +50,7 @@ export default function CategoryPage() {
           const firstProductCategory = response.data.content[0].category;
           if (
             firstProductCategory.parentCategory &&
-            firstProductCategory.parentCategory.categoryId == categoryId
+            firstProductCategory.parentCategory.categoryId === categoryId
           ) {
             setCategoryName(firstProductCategory.parentCategory.categoryName);
           } else {
