@@ -59,7 +59,7 @@ export default function LoginPage() {
           // image: item.product.image, // image yoksa yorumda kalabilir
           // stock: item.product.stock, // ihtiyaç varsa açılır
         }));
-  
+        
         setCartItems(formattedCart);
         localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
       } else {

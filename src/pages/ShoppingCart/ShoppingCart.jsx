@@ -89,14 +89,19 @@ export default function ShoppingCart() {
     if (jwtToken && customerId) {
       try {
         const item = updatedCart[index];
+        console.log("🧾 PATCHING /remove-item-quantity with:", {
+          itemId: item?.shopping_cart_item_id,
+          quantity: 1,
+        });
         await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
+          
           body: JSON.stringify({
-            itemId: item.shoppingCartItemId, // must be from cart item
+            itemId: item.shopping_cart_item_id, // must be from cart item
             quantity: 1,
           }),
         });
@@ -117,13 +122,35 @@ export default function ShoppingCart() {
     updateContextCart(updatedCart);
   };
   
-  const removeItemFromCart = (index) => {
+  const removeItemFromCart = async (index) => {
     const updatedCart = [...cartItems];
+    const removedItem = updatedCart[index];
+  
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+  
+    // 🔐 Send delete to backend if logged in
+    console.log("🗑 Removing from backend:", removedItem.shopping_cart_item_id);
+    if (jwtToken && customerId && removedItem?.shopping_cart_item_id) {
+      try {
+        await fetch(`http://localhost:8080/api/cart-management/remove-item/${removedItem.shopping_cart_item_id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+      } catch (error) {
+        console.error("❌ Failed to remove item from server:", error);
+      }
+    }
+  
+    // ✅ Local update (unchanged)
     updatedCart.splice(index, 1);
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
+  
 
 
 
