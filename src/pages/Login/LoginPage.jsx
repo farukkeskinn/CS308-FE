@@ -61,9 +61,12 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log("Login response data:", data);
+
 
       if (response.ok) {
         localStorage.setItem("jwtToken", data.token);
+        localStorage.setItem("customerId", data.customerId);
         navigate("/");
       } else {
         setLoginError(true);

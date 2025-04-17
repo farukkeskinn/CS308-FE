@@ -51,6 +51,7 @@ const Navbar = () => {
     setToken(null);
     setProfileMenuOpen(false);
     setCustomerName("");
+    localStorage.clear();
   };
 
   const navTopStyle = {
@@ -147,6 +148,12 @@ const Navbar = () => {
                       className="d-block text-decoration-none text-dark fw-bold py-2"
                     >
                       View Profile
+                    </Link>
+                    <Link
+                      to="/orderpage"
+                      className="d-block text-decoration-none text-dark fw-bold py-2"
+                    >
+                      Order History
                     </Link>
                     <button
                       className="btn btn-danger w-100 py-2"
