@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [emailError] = useState("");
   const [passwordError ] = useState("");
   const [loginError, setLoginError] = useState("");
-  const { setCartItems } = useCartContext();
+  const { setCartItems, fetchUserCart } = useCartContext();
   const navigate = useNavigate();
   const mainColor = "#1f1c66";
 
@@ -32,44 +32,6 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
-
-  const fetchUserCart = async (customerId, jwtToken) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
-  
-      if (!response.ok) {
-        console.error("Cart fetch failed with status:", response.status);
-        return;
-      }
-  
-      const result = await response.json();
-      console.log("📦 DB'den gelen sepet:", result);
-  
-      // ❗ ÖNEMLİ: result.shoppingCartItems'e göre context'i güncelle
-      if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
-        const formattedCart = result.shoppingCartItems.map(item => ({
-          productId: item.product.productId,
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          // image: item.product.image, // image yoksa yorumda kalabilir
-          // stock: item.product.stock, // ihtiyaç varsa açılır
-        }));
-        
-        setCartItems(formattedCart);
-        localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
-      } else {
-        console.warn("Beklenen shoppingCartItems yok:", result);
-      }
-    } catch (error) {
-      console.error("fetchUserCart hatası:", error);
-    }
-  };
-  
 
 const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
   try {

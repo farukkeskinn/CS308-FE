@@ -23,72 +23,101 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const addToCart = async (product, quantity = 1) => {
-    const jwtToken = localStorage.getItem("jwtToken");
-    const customerId = localStorage.getItem("customerId");
+    const updateContextCart = (newCart) => {
+      setCartItems(newCart);
+      localStorage.setItem("shoppingCart", JSON.stringify(newCart));
+    };
   
-    if (!jwtToken || !customerId) {
-      // 🌐 GUEST FLOW (localStorage + Context only)
-      const updatedCart = [...cartItems];
-      const index = updatedCart.findIndex((item) => item.productId === product.productId);
-  
-      if (index > -1) {
-        updatedCart[index].quantity += quantity;
-      } else {
-        updatedCart.push({ ...product, quantity });
-      }
-  
-      setCartItems(updatedCart);
-    } else {
-      // 🔐 LOGGED-IN FLOW (POST to API + Update Context)
+    // 🔁 Move fetchUserCart here:
+    const fetchUserCart = async (customerId, jwtToken) => {
       try {
-        console.log("🟢 Posting to /add-item with:", {
-          customerId,
-          productId: product.productId,
-          quantity,
-        });
-        const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
-          method: "POST",
+        const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
-          body: JSON.stringify({
-            customerId,
-            productId: product.productId,
-            quantity,
-          }),
         });
+  
+        if (!response.ok) {
+          console.error("Cart fetch failed with status:", response.status);
+          return;
+        }
   
         const result = await response.json();
   
-        if (response.ok) {
-          if (result.message === "There is no enough stock") {
-            alert("Stok yetersiz!");
-          } else {
-            // ✅ Optimistically update cartItems
-            const updatedCart = [...cartItems];
-            const index = updatedCart.findIndex((item) => item.productId === product.productId);
-  
-            if (index > -1) {
-              updatedCart[index].quantity += quantity;
-            } else {
-              updatedCart.push({ ...product, quantity });
-            }
-  
-            setCartItems(updatedCart);
-          }
+        if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
+          const formattedCart = result.shoppingCartItems.map(item => {
+            const formattedItem = {
+              productId: item.product.productId,
+              name: item.product.name,
+              price: item.product.price,
+              quantity: item.quantity,
+              shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
+            };
+            return formattedItem;
+          });
+          
+          
+          setCartItems(formattedCart);
+          localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
         } else {
-          console.error("Sepet API hatası:", result.message);
+          console.warn("Beklenen shoppingCartItems yok:", result);
         }
-      } catch (err) {
-        console.error("Sepete ekleme hatası:", err);
+      } catch (error) {
+        console.error("fetchUserCart hatası:", error);
       }
-    }
-  };
+    };
+  
+
+    const addToCart = async (product, quantity = 1) => {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const customerId = localStorage.getItem("customerId");
+    
+      if (!jwtToken || !customerId) {
+        const updatedCart = [...cartItems];
+        const index = updatedCart.findIndex((item) => item.productId === product.productId);
+    
+        if (index > -1) {
+          updatedCart[index].quantity += quantity;
+        } else {
+          updatedCart.push({ ...product, quantity });
+        }
+    
+        setCartItems(updatedCart);
+      } else {
+        try {
+          const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({
+              customerId,
+              productId: product.productId,
+              quantity,
+            }),
+          });
+    
+          const result = await response.json();
+    
+          if (response.ok) {
+            if (result.message === "There is no enough stock") {
+              alert("Stok yetersiz!");
+            } else {
+              await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
+            }
+          } else {
+            console.error("Sepet API hatası:", result.message);
+          }
+        } catch (err) {
+          console.error("Sepete ekleme hatası:", err);
+        }
+      }
+    };
+    
 
   return (
-    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart }}>
+    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart, fetchUserCart, updateContextCart }}>
       {children}
     </CartContext.Provider>
   );

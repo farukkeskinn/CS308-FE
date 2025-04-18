@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 
 
 import {
@@ -24,16 +23,17 @@ import HomeIcon from '@mui/icons-material/Home';
 import { useCartContext } from "../../context/CartContext";
 
 export default function ShoppingCart() {
-  const [cartItems, setCartItems] = useState([]);
   const { setCartItems: updateContextCart } = useCartContext();
   const [errorMessage, setErrorMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
+  const { cartItems, setCartItems, fetchUserCart } = useCartContext();
+
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
     setCartItems(storedCart);
-  }, []);
+  }, [setCartItems]);
 
   const totalPrice = cartItems
     .reduce((acc, item) => acc + item.price * item.quantity, 0)
@@ -89,10 +89,6 @@ export default function ShoppingCart() {
     if (jwtToken && customerId) {
       try {
         const item = updatedCart[index];
-        console.log("🧾 PATCHING /remove-item-quantity with:", {
-          itemId: item?.shopping_cart_item_id,
-          quantity: 1,
-        });
         await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
           method: "PATCH",
           headers: {
@@ -101,10 +97,13 @@ export default function ShoppingCart() {
           },
           
           body: JSON.stringify({
-            itemId: item.shopping_cart_item_id, // must be from cart item
+            itemId: item.shoppingCartItemId,
             quantity: 1,
           }),
         });
+
+        await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
+
       } catch (error) {
         console.error("Error decreasing quantity on server:", error);
       }
@@ -130,15 +129,18 @@ export default function ShoppingCart() {
     const customerId = localStorage.getItem("customerId");
   
     // 🔐 Send delete to backend if logged in
-    console.log("🗑 Removing from backend:", removedItem.shopping_cart_item_id);
-    if (jwtToken && customerId && removedItem?.shopping_cart_item_id) {
+    console.log("🗑 Removing from backend:", removedItem.shoppingCartItemId);
+    if (jwtToken && customerId && removedItem?.shoppingCartItemId) {
       try {
-        await fetch(`http://localhost:8080/api/cart-management/remove-item/${removedItem.shopping_cart_item_id}`, {
+        await fetch(`http://localhost:8080/api/cart-management/remove-item/${removedItem.shoppingCartItemId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
           },
         });
+        // ✅ Refresh cart from DB to sync quantities + item IDs
+        await fetchUserCart(customerId, jwtToken);
+        return;
       } catch (error) {
         console.error("❌ Failed to remove item from server:", error);
       }
@@ -202,7 +204,7 @@ export default function ShoppingCart() {
   };
 
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!localStorage.getItem("jwtToken")) {
       setOpenDialog(true);
       return;
@@ -213,61 +215,15 @@ export default function ShoppingCart() {
       return;
     }
   
-    try {
-      const itemsToSend = cartItems.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      }));
-
-      console.log("Sending to backend:", {
-        items: itemsToSend,
-        customerId: localStorage.getItem("customerId"),
-        cart_status: "IN CART",
-        cartStatus: "IN CART",
-
-        
-      });
-      await axios.post(
-        "http://localhost:8080/api/cart-management/add-item",
-        {
-          customerId: localStorage.getItem("customerId"),
-          items: itemsToSend, 
-          cart_status: "IN CART"
-        }, // Adjust if your backend expects a different structure
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-  
-      navigate("/checkout");
-    } catch (error) {
-      if (error.response) {
-        // Backend responded with an error status
-        const status = error.response.status;
-  
-        if (status === 404) {
-          setErrorMessage("❌ Server endpoint not found. Please check the URL or consult backend team.");
-        } else if (status === 400) {
-          setErrorMessage("❌ Invalid request format. Make sure your cart data matches backend expectations.");
-        } else if (status === 401 || status === 403) {
-          setErrorMessage("🔐 Unauthorized request. Please log in again.");
-        } else {
-          setErrorMessage(`❌ Server error (${status}). Please try again later.`);
-        }
-      } else if (error.request) {
-        // Request made but no response
-        setErrorMessage("🚫 Cannot reach backend server. Check network or server status.");
-      } else {
-        // Something else went wrong setting up the request
-        setErrorMessage("❗ Unexpected error while preparing your request.");
-      }
-  
-      console.error("Checkout failed:", error);
+    if (cartItems.length === 0) {
+      setErrorMessage("🛒 Your cart is empty.");
+      return;
     }
+  
+    // ✅ All checks passed – proceed
+    navigate("/checkout");
   };
+  
   
   
 
