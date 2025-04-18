@@ -19,6 +19,7 @@ import {
   TableContainer,
   TableRow,
   Divider,
+  Snackbar,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -34,6 +35,11 @@ export default function ProductPage() {
   const [reviewsVisible, setReviewsVisible] = useState(false);
   const [cartClicked, setCartClicked] = useState(false);
   const { addToCart } = useCartContext();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [favoriteSnackbarOpen, setFavoriteSnackbarOpen] = useState(false);
+  const [favoriteMessage, setFavoriteMessage] = useState("");
+
+
 
   useEffect(() => {
     if (!productId) return;
@@ -92,9 +98,6 @@ export default function ProductPage() {
   
         <Box mt={1} display="flex" alignItems="center" gap={2}>
           <Typography fontWeight="bold">⭐ {averageRating}</Typography>
-          <Typography>
-            {totalReviews > 0 ? `${totalReviews} reviews` : "No Reviews Yet"}
-          </Typography>
         </Box>
   
         <Grid container spacing={4} mt={3}>
@@ -152,13 +155,17 @@ export default function ProductPage() {
                     fullWidth
                     variant="contained"
                     startIcon={<ShoppingCart />}
-                    disabled={product.quantity === 0} // 🔒 Sepete ekleme devre dışı
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (product.quantity === 0) {
+                        setSnackbarOpen(true);
+                        return;
+                      }
                       addToCart(product);
                       setCartClicked(true);
                       setTimeout(() => setCartClicked(false), 300);
                     }}
+                    
                     sx={{
                       backgroundColor: product.quantity === 0
                         ? "#ccc"
@@ -199,7 +206,14 @@ export default function ProductPage() {
                         <FavoriteBorder sx={{ transition: "transform 0.3s ease", transform: "scale(1)" }} />
                       )
                     }
-                    onClick={() => setIsFavorited(!isFavorited)}
+                    onClick={() => {
+                      const newFavoriteStatus = !isFavorited;
+                      setIsFavorited(newFavoriteStatus);
+                      setFavoriteMessage(newFavoriteStatus ? "Added to Favorites!" : "Removed from Favorites!");
+                      setFavoriteSnackbarOpen(true);
+                      setTimeout(() => setFavoriteSnackbarOpen(false), 3000);
+                    }}
+
                     sx={{
                       height: "45px",
                       borderRadius: "10px",
@@ -216,8 +230,36 @@ export default function ProductPage() {
                     {isFavorited ? "Added to Favorites" : "Add to Favorites"}
                   </Button>
                 </Box>
+                <Snackbar
+                  open={snackbarOpen}
+                  autoHideDuration={3000}
+                  onClose={() => setSnackbarOpen(false)}
+                  message="This product is currently out of stock."
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  ContentProps={{
+                    sx: {
+                      backgroundColor: "#d32f2f", 
+                      color: "#fff",              
+                      fontWeight: "bold",
+                    },
+                  }}
+                />
               </Box>
             </Paper>
+            <Snackbar
+              open={favoriteSnackbarOpen}
+              autoHideDuration={3000}
+              onClose={() => setFavoriteSnackbarOpen(false)}
+              message={favoriteMessage}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+              ContentProps={{
+                sx: {
+                  backgroundColor: favoriteMessage.includes("Removed") ? "#d32f2f" : "#2e7d32",
+                  color: "#fff",
+                  fontWeight: "bold",
+                },
+              }}
+            />
           </Grid>
         </Grid>
   
@@ -285,22 +327,26 @@ export default function ProductPage() {
               <Typography variant="subtitle1" fontWeight="bold">
                 Customer Reviews
               </Typography>
-              {totalReviews > 0 ? (
-                <ul className="list-group mt-2">
-                  {product.reviews.map((review, index) => (
-                    <li key={index} className="list-group-item p-2">
-                      <span className="fw-bold">
-                        {"⭐".repeat(review.rating)}
-                      </span>{" "}
-                      - {review.comment || "No Comment"}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No Comments Yet.
-                </Typography>
-              )}
+
+              {(() => {
+                const acceptedReviews = product.reviews.filter(
+                  (review) => review.approvalStatus === 'approved'
+                );
+
+                return acceptedReviews.length > 0 ? (
+                  <ul className="list-group mt-2">
+                    {acceptedReviews.map((review, index) => (
+                      <li key={index} className="list-group-item p-2">
+                        {review.comment}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No Comments Yet.
+                  </Typography>
+                );
+              })()}
             </div>
           </Collapse>
         </Paper>

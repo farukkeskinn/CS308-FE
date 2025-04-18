@@ -13,10 +13,17 @@ import Navbar from "./components/Navbar";
 import CategoryPage from "./pages/CategoryPage/CategoryPage";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ShoppingCart from "./pages/ShoppingCart/ShoppingCart";
-import { CartProvider } from "./context/CartContext"; // ← Burayı ekle
 import OrderHistory from "./pages/Orderpage/OrderPage";
 import CheckoutPage from "./pages/CheckoutPage/CheckoutPage"; // Doğru
 import ThankYouPage from "./pages/ThankYouPage/ThankYouPage"; // Doğru
+import { CartProvider } from "./context/CartContext";
+import SalesDashboard from "./pages/SalesDashboard/SalesDashboard";
+import ProductDashboard from './pages/ProductDashboard/ProductDashboard';
+import NewProductForm from "./pages/ProductDashboard/NewProductForm";
+import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
+import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
+import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
+
 
 function App() {
   useEffect(() => {
@@ -60,6 +67,12 @@ function App() {
                   <Route path="/orderpage/:orderId" element={<OrderHistory />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/thank-you" element={<ThankYouPage />} />
+                  <Route path="/salesdashboard" element={<SalesDashboard />} />
+                  <Route path="/productdashboard" element={<ProductDashboard />} />
+                  <Route path="/productdashboard/new-product" element={<NewProductForm />} />
+                  <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
+                  <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
+                  <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
                 </Routes>
               </>
             }

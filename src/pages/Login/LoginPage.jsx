@@ -57,6 +57,7 @@ const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
       setCartItems([]);
       await fetchUserCart(customerId, jwtToken);
     }
+
   } catch (err) {
     console.error("Merge işlemi başarısız:", err);
   }
@@ -79,7 +80,7 @@ const handleLogin = async (e) => {
     if (response.ok) {
       localStorage.setItem("jwtToken", data.token);
       localStorage.setItem("customerId", data.customerId);
-      localStorage.setItem("userRole", data.role);
+      localStorage.setItem("role", data.role);
 
       const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
 

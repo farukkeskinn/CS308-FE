@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate} from "react-router-dom";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginIcon from '@mui/icons-material/Login';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -17,6 +17,7 @@ const Navbar = () => {
   const [customerName, setCustomerName] = useState("");
   const { getCartTotalQuantity } = useCartContext();
 
+  const navigate = useNavigate();
   const location = useLocation();
   
   useEffect(() => {
@@ -51,7 +52,11 @@ const Navbar = () => {
     setToken(null);
     setProfileMenuOpen(false);
     setCustomerName("");
+
     localStorage.clear();
+
+    navigate("/");
+
   };
 
   const navTopStyle = {
@@ -143,6 +148,14 @@ const Navbar = () => {
                     className="position-absolute bg-white shadow rounded border text-center"
                     style={dropdownBoxStyle}
                   >
+                    {localStorage.getItem("role") === "SALES_MANAGER" || localStorage.getItem("role") === "PRODUCT_MANAGER" ? (
+                      <Link
+                        to={localStorage.getItem("role") === "SALES_MANAGER" ? "/salesdashboard" : "/productdashboard"}
+                        className="d-block text-decoration-none text-dark fw-bold py-2"
+                      >
+                        Admin Interface
+                      </Link>
+                    ) : (
                     <Link
                       to="/profile"
                       className="d-block text-decoration-none text-dark fw-bold py-2"
@@ -159,6 +172,8 @@ const Navbar = () => {
                       className="btn btn-danger w-100 py-2"
                       onClick={handleLogout}
                     >
+                    )}
+                    <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
                       Logout
                     </button>
                   </div>
