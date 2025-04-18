@@ -19,6 +19,11 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("shoppingCart", JSON.stringify(cartItems));
   }, [cartItems]);
 
+  const clearCart = () => {
+    setCartItems([]);                  
+    localStorage.setItem("shoppingCart", "[]");
+  };
+
   const getCartTotalQuantity = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
@@ -117,7 +122,7 @@ export const CartProvider = ({ children }) => {
     
 
   return (
-    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart, fetchUserCart, updateContextCart }}>
+    <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart, fetchUserCart, updateContextCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );

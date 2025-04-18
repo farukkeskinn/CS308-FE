@@ -15,10 +15,12 @@ const Navbar = () => {
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
-  const { getCartTotalQuantity } = useCartContext();
+  const { cartItems } = useCartContext();
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const totalQty = Array.isArray(cartItems) ? cartItems.reduce((t, itm) => t + (itm?.quantity || 0), 0) : 0;
   
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
@@ -194,7 +196,7 @@ const Navbar = () => {
             )}
             <Link to="/cart" className="text-white fs-5">
               <Badge
-                badgeContent={getCartTotalQuantity()}
+                badgeContent={totalQty}
                 color="error"
                 showZero
                 overlap="rectangular"

@@ -34,7 +34,7 @@ const nameRegex = /^[A-Za-zÇÖÜĞŞİçöüğş\s]+$/;
 const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
 
 export default function Checkout() { 
-  const { cartItems } = useCartContext();
+  const { cartItems, clearCart, fetchUserCart } = useCartContext();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [shippingData, setShippingData] = useState({
@@ -182,7 +182,12 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
       const result = await response.json();
       console.log("Checkout successful:", result);
   
-      // ✅ Sipariş başarıyla tamamlandıysa yönlendir
+      clearCart();
+      const customerId = localStorage.getItem("customerId");
+      if (customerId && token) {
+        fetchUserCart(customerId, token);
+      }
+      
       navigate("/thank-you");
   
     } catch (error) {
