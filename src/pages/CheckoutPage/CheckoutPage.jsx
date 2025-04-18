@@ -153,37 +153,44 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
   };
 
   const handleSubmit = async () => {
-    const checkoutData = {
-      paymentMethod: "Credit Card",
-      amount: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
-      address: `${shippingData.address}, ${shippingData.city}, ${shippingData.country}, ${shippingData.zipCode}`,
+    const paymentPayload = {
+      cardNumber: paymentData.cardNumber.replace(/\s/g, ""),
+      cardHolderName: paymentData.cardName,
+      expiryDate: paymentData.expiry,
+      cvv: paymentData.cvv,
     };
   
     try {
+      const token = localStorage.getItem("jwtToken"); // ✅ doğru key
+  
       const response = await fetch("http://localhost:8080/api/payments/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // 🔐 token doğru şekilde eklendi
         },
-        body: JSON.stringify(checkoutData),
-        credentials: "include", // Eğer JWT veya session cookie gerekiyorsa ekle
+        body: JSON.stringify(paymentPayload),
       });
   
-      if (response.ok) {
-        navigate("/thank-you");
-      } else {
-        const errorData = await response.json();
-        setFormError(errorData.message || "Checkout failed. Please try again.");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Checkout error:", errorText);
+        alert("Checkout failed: " + errorText);
+        return;
       }
+  
+      const result = await response.json();
+      console.log("Checkout successful:", result);
+  
+      // ✅ Sipariş başarıyla tamamlandıysa yönlendir
+      navigate("/thank-you");
+  
     } catch (error) {
-      console.error("Error during checkout:", error);
-      setFormError("Checkout failed. Please try again.");
+      console.error("Checkout failed:", error);
+      alert("An error occurred during checkout.");
     }
   };
   
-
-  
-
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
     if (name === "phoneNumber") {
