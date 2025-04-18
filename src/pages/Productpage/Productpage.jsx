@@ -43,22 +43,35 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (!productId) return;
-
-    axios.get(`http://localhost:8080/api/products/${productId}/details`)
-      .then((response) => {
-        setProduct(response.data);
-        setLoading(false);
-        return axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
-      })
-      .then((recommendedResponse) => {
-        if (recommendedResponse.data.content && Array.isArray(recommendedResponse.data.content)) {
-          setRecommendedProducts(recommendedResponse.data.content);
+  
+    const fetchAllProductData = async () => {
+      setLoading(true);
+  
+      try {
+        // 1️⃣ Get the core product (used for addToCart)
+        const productRes = await axios.get(`http://localhost:8080/api/products/${productId}`);
+        setProduct(productRes.data);
+        console.log("📸 product.imageUrl =>", productRes.data.image_url);
+  
+        // 2️⃣ Fetch details (optional)
+        await axios.get(`http://localhost:8080/api/products/${productId}/details`);
+  
+        // 3️⃣ Then fetch recommended products
+        const recommendedRes = await axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
+        if (recommendedRes.data.content && Array.isArray(recommendedRes.data.content)) {
+          setRecommendedProducts(recommendedRes.data.content);
         }
-      })
-      .catch(() => {
+  
+      } catch (error) {
+        console.error("Product/recommendation fetch error:", error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+  
+    fetchAllProductData();
   }, [productId]);
+  
 
   if (loading) {
     return <Typography align="center" mt={5}>Loading product details...</Typography>;
@@ -90,7 +103,7 @@ export default function ProductPage() {
         <Grid container spacing={4} mt={3}>
           <Grid item xs={12} md={5}>
             <img
-              src={product.imageUrl}
+              src={product.image_url}
               alt={product.name}
               style={{ width: "100%", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}
             />

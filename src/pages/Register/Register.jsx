@@ -59,6 +59,7 @@ export default function RegisterPage() {
 
       if (response.ok) {
         localStorage.setItem("jwtToken", data.token);
+        localStorage.setItem("customerId", data.customerId);
         setMessage("Registration successful! Redirecting...");
         setTimeout(() => navigate("/"), 2000);
       } else {

@@ -52,7 +52,11 @@ const Navbar = () => {
     setToken(null);
     setProfileMenuOpen(false);
     setCustomerName("");
+
+    localStorage.clear();
+
     navigate("/");
+
   };
 
   const navTopStyle = {
@@ -152,12 +156,22 @@ const Navbar = () => {
                         Admin Interface
                       </Link>
                     ) : (
-                      <Link
-                        to="/profile"
-                        className="d-block text-decoration-none text-dark fw-bold py-2"
-                      >
-                        View Profile
-                      </Link>
+                    <Link
+                      to="/profile"
+                      className="d-block text-decoration-none text-dark fw-bold py-2"
+                    >
+                      View Profile
+                    </Link>
+                    <Link
+                      to="/orderpage"
+                      className="d-block text-decoration-none text-dark fw-bold py-2"
+                    >
+                      Order History
+                    </Link>
+                    <button
+                      className="btn btn-danger w-100 py-2"
+                      onClick={handleLogout}
+                    >
                     )}
                     <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
                       Logout

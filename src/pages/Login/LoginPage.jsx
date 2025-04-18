@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/AuthNavbar";
+import { useCartContext } from "../../context/CartContext";
 import {
   TextField,
   IconButton,
@@ -16,10 +17,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [emailError] = useState("");
+  const [passwordError ] = useState("");
   const [loginError, setLoginError] = useState("");
-  
+  const { setCartItems, fetchUserCart } = useCartContext();
   const navigate = useNavigate();
   const mainColor = "#1f1c66";
 
@@ -31,48 +32,74 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setEmailError("");
-    setPasswordError("");
-    setLoginError(false);
 
-    let hasError = false;
+const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
+  try {
+    const response = await fetch("http://localhost:8080/api/cart-management/merge-guest-cart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({
+        customerId,
+        guestItems: guestCart.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      }),
+    });
 
-    if (!email) {
-      setEmailError("Email is required");
-      hasError = true;
-      return;
+    const result = await response.json();
+
+    if (response.ok && result.clearGuestCart) {
+      localStorage.removeItem("shoppingCart");
+      setCartItems([]);
+      await fetchUserCart(customerId, jwtToken);
     }
-  
-    if (!password) {
-      setPasswordError("Password is required");
-      hasError = true;
-      return;
-    }
 
-    if (hasError) return;
+  } catch (err) {
+    console.error("Merge işlemi başarısız:", err);
+  }
+};
 
-    try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoginError(false);
 
-      const data = await response.json();
+  try {
+    const response = await fetch("http://localhost:8080/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (response.ok) {
-        localStorage.setItem("jwtToken", data.token);
-        localStorage.setItem("role", data.role);
-        navigate("/");
+    const data = await response.json();
+    console.log("Login response data:", data);
+
+    if (response.ok) {
+      localStorage.setItem("jwtToken", data.token);
+      localStorage.setItem("customerId", data.customerId);
+      localStorage.setItem("role", data.role);
+
+      const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+      if (guestCart.length > 0) {
+        await mergeGuestCart(data.customerId, data.token, guestCart);
       } else {
-        setLoginError(true);
+        await fetchUserCart(data.customerId, data.token);
       }
-    } catch (error) {
+
+      navigate("/");
+    } else {
       setLoginError(true);
     }
-  };
+  } catch (error) {
+    console.error("Login hatası:", error);
+    setLoginError(true);
+  }
+};
+
 
   return (
     <div className="d-flex flex-column min-vh-100">
