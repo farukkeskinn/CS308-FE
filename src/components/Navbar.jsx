@@ -14,13 +14,16 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [customerName, setCustomerName] = useState("");
+  const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const { cartItems } = useCartContext();
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const totalQty = Array.isArray(cartItems) ? cartItems.reduce((t, itm) => t + (itm?.quantity || 0), 0) : 0;
+  
+  // Check if user is a customer (not a manager)
+  const isCustomer = token && userRole !== "SALES_MANAGER" && userRole !== "PRODUCT_MANAGER";
   
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
@@ -32,33 +35,22 @@ const Navbar = () => {
       .catch((err) => {
         console.error("Error fetching categories:", err);
         setLoading(false);
-      });
+    });
+  }, [token]);
 
-      
-    if (token) {
-      fetch("http://localhost:8080/api/user/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.customer) {
-            setCustomerName(data.customer.name || "");
-          }
-        })
-        .catch(() => setCustomerName(""));
-    }
+  useEffect(() => {
+    setUserRole(localStorage.getItem("role") || "");
   }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     setToken(null);
     setProfileMenuOpen(false);
-    setCustomerName("");
+    setUserRole("");
 
     localStorage.clear();
 
     navigate("/");
-
   };
 
   const navTopStyle = {
@@ -143,16 +135,16 @@ const Navbar = () => {
                   style={profileBtnStyle}
                 >
                   <AccountCircleIcon fontSize="small" />
-                  <span>{customerName || "Account"}</span>
+                  <span>{"Account"}</span>
                 </button>
                 {profileMenuOpen && (
                   <div
                     className="position-absolute bg-white shadow rounded border text-center"
                     style={dropdownBoxStyle}
                   >
-                    {localStorage.getItem("role") === "SALES_MANAGER" || localStorage.getItem("role") === "PRODUCT_MANAGER" ? (
+                    {userRole === "SALES_MANAGER" || userRole === "PRODUCT_MANAGER" ? (
                       <Link
-                        to={localStorage.getItem("role") === "SALES_MANAGER" ? "/salesdashboard" : "/productdashboard"}
+                        to={userRole === "SALES_MANAGER" ? "/salesdashboard" : "/productdashboard"}
                         className="d-block text-decoration-none text-dark fw-bold py-2"
                       >
                         Admin Interface
@@ -171,11 +163,11 @@ const Navbar = () => {
                         >
                           Order History
                         </Link>
-                        <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
-                          Logout
-                        </button>
                     </div>
                     )}
+                    <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
+                      Logout
+                    </button>
                   </div>
                 )}
               </div>
@@ -194,27 +186,31 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
-            <Link to="/cart" className="text-white fs-5">
-              <Badge
-                badgeContent={totalQty}
-                color="error"
-                showZero
-                overlap="rectangular"
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                sx={{
-                  "& .MuiBadge-badge": {
-                    fontSize: "0.75rem",
-                    height: 18,
-                    minWidth: 18,
-                  },
-                }}
-              >
-                <ShoppingCartIcon fontSize="medium" />
-              </Badge>
-            </Link>
+            
+            {/* Show shopping cart icon only for customers or non-logged in users */}
+            {!token || isCustomer ? (
+              <Link to="/cart" className="text-white fs-5">
+                <Badge
+                  badgeContent={totalQty}
+                  color="error"
+                  showZero
+                  overlap="rectangular"
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      fontSize: "0.75rem",
+                      height: 18,
+                      minWidth: 18,
+                    },
+                  }}
+                >
+                  <ShoppingCartIcon fontSize="medium" />
+                </Badge>
+              </Link>
+            ) : null}
           </div>
         </div>
       </nav>
