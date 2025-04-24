@@ -50,6 +50,15 @@ function App() {
 
   return (
     <CartProvider>
+      <div
+        style={{
+          backgroundImage: "url('/bg3.jpg')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "400px", // 👈 smaller repeated tiles
+          backgroundPosition: "center",
+          minHeight: "100vh",
+        }}
+      >
       <Router>
         <Routes>
           <Route
@@ -81,6 +90,7 @@ function App() {
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
+      </div>
     </CartProvider>
   );
 }

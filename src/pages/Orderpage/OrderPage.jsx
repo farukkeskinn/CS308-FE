@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, Grid } from "@mui/material";
+import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, Grid, Paper } from "@mui/material";
 import { Link } from "react-router-dom";
 
 export default function OrderHistory() {
@@ -93,76 +93,81 @@ export default function OrderHistory() {
   };
 
   return (
-    <Box className="container py-5">
-      <Typography variant="h4" className="text-center mb-4">
-        Order History
-      </Typography>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", py: 5, px: { xs: 2, md: 10 } }}>
+      <Paper elevation={3} sx={{ backgroundColor: "white", p: 4, textAlign: "center", mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold">
+          Order History
+        </Typography>
+      </Paper>
 
       {orders.length === 0 ? (
-        <div className="text-center">
-          <h5>No purchase has been made.</h5>
-          <p>
+        <Paper elevation={3} sx={{ p: 4, textAlign: "center", backgroundColor: "white" }}>
+          <Typography variant="h6" gutterBottom>
+            No purchase has been made.
+          </Typography>
+          <Typography>
             Make your first purchase now!{' '}
-            <Link to="/">Continue Shopping</Link>
-          </p>
-        </div>
+            <Link to="/" style={{ color: '#1976d2' }}>Continue Shopping</Link>
+          </Typography>
+        </Paper>
       ) : (
-        <table className="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Order ID</th>
-              <th scope="col">Order Date</th>
-              <th scope="col">Total Price</th>
-              <th scope="col">Status</th>
-              <th scope="col">Payment</th>
-              <th scope="col">Invoice</th>
-              <th scope="col">Items</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order, index) => (
-              <tr key={order.orderId}>
-                <th scope="row">{index + 1}</th>
-              
-                <td>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => copyToClipboard(order.orderId)}
-                  >
-                    Copy ID
-                  </Button>
-                </td>
-                <td>{new Date(order.orderDate).toLocaleString()}</td>
-                <td>${order.totalPrice.toFixed(2)}</td>
-                <td>{order.orderStatus}</td>
-                <td>{order.paymentStatus}</td>
-                <td>
-                  {order.invoiceLink ? (
-                    <a href={order.invoiceLink} target="_blank" rel="noopener noreferrer">
-                      View Invoice
-                    </a>
-                  ) : (
-                    "Not Available"
-                  )}
-                </td>
-                <td>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => {
-                      setSelectedOrderItems(order.orderItems);
-                      setOpenItemsDialog(true);
-                    }}
-                  >
-                    View Items ({order.orderItems.length})
-                  </Button>
-                </td>
+        <Paper elevation={3} sx={{ backgroundColor: "white", p: 3 }}>
+          <table className="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Order ID</th>
+                <th scope="col">Order Date</th>
+                <th scope="col">Total Price</th>
+                <th scope="col">Status</th>
+                <th scope="col">Payment</th>
+                <th scope="col">Invoice</th>
+                <th scope="col">Items</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orders.map((order, index) => (
+                <tr key={order.orderId}>
+                  <th scope="row">{index + 1}</th>
+                  <td>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => copyToClipboard(order.orderId)}
+                    >
+                      Copy ID
+                    </Button>
+                  </td>
+                  <td>{new Date(order.orderDate).toLocaleString()}</td>
+                  <td>${order.totalPrice.toFixed(2)}</td>
+                  <td>{order.orderStatus}</td>
+                  <td>{order.paymentStatus}</td>
+                  <td>
+                    {order.invoiceLink ? (
+                      <a href={order.invoiceLink} target="_blank" rel="noopener noreferrer">
+                        View Invoice
+                      </a>
+                    ) : (
+                      "Not Available"
+                    )}
+                  </td>
+                  <td>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedOrderItems(order.orderItems);
+                        setOpenItemsDialog(true);
+                      }}
+                    >
+                      View Items ({order.orderItems.length})
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Paper>
       )}
 
       <Dialog open={openItemsDialog} onClose={() => setOpenItemsDialog(false)}>
