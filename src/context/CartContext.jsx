@@ -52,12 +52,28 @@ export const CartProvider = ({ children }) => {
         if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
           const formattedCart = result.shoppingCartItems.map(item => {
             const formattedItem = {
+              product: item.product,
               productId: item.product.productId,
               name: item.product.name,
+              model: item.product.model,
+              description: item.product.description,
+              distributor: item.product.distributor,
+              categoryName: item.product.category.categoryName,
+              categoryId: item.product.category.categoryId,
+              itemSold: item.product.itemSold,
               price: item.product.price,
+              cost: item.product.cost,
+              stock: item.product.stock,
+              image_url: item.product.image_url,
+              serialNumber: item.product.serialNumber,
+              warrantyStatus: item.product.warrantyStatus,
+
+              
               quantity: item.quantity,
               shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
             };
+            console.log("🛒 Formatted Cart Item:", formattedItem); // Log each item
+
             return formattedItem;
           });
           
@@ -107,15 +123,15 @@ export const CartProvider = ({ children }) => {
     
           if (response.ok) {
             if (result.message === "There is no enough stock") {
-              alert("Stok yetersiz!");
+              alert("There is no enough stock");
             } else {
               await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
             }
           } else {
-            console.error("Sepet API hatası:", result.message);
+            console.error("Cart API error:", result.message);
           }
         } catch (err) {
-          console.error("Sepete ekleme hatası:", err);
+          console.error("Error while adding to cart:", err);
         }
       }
     };
