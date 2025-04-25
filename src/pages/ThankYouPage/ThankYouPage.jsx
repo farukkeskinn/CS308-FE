@@ -9,12 +9,15 @@ import {
   useTheme,
 } from "@mui/material";
 import { useCartContext } from "../../context/CartContext";
+import { useLocation } from "react-router-dom";
 
 const ThankYouPage = () => {
   const [showInvoice, setShowInvoice] = useState(false);
   const { cartItems } = useCartContext();
   const theme = useTheme();
+  const location = useLocation();
 
+  const invoicePdfUrl = location.state?.invoicePdfUrl || null;
   const totalPrice = cartItems
     .reduce((acc, item) => acc + item.price * item.quantity, 0)
     .toFixed(2);
@@ -70,47 +73,30 @@ const ThankYouPage = () => {
       </Box>
 
       {showInvoice && (
-        <Paper
-          elevation={4}
-          sx={{
-            p: { xs: 4, md: 5 },
-            mt: 5,
-            borderRadius: 4,
-            backgroundColor: "#ffffff",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          }}
-        >
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            🧾 Invoice Summary
-          </Typography>
-
-          <Typography variant="subtitle1" gutterBottom>
-            Customer: <strong>{fullName}</strong>
-          </Typography>
-          <Divider sx={{ my: 2 }} />
-
-          {cartItems.map((item) => (
-            <Box key={item.productId} sx={{ mb: 2 }}>
-              <Grid container justifyContent="space-between">
-                <Typography>
-                  {item.name} × {item.quantity}
-                </Typography>
-                <Typography color="text.secondary">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </Typography>
-              </Grid>
-              <Divider sx={{ my: 1 }} />
+        <>
+          {invoicePdfUrl ? (
+            <Box mt={4}>
+              <Typography variant="h6" gutterBottom>
+                Your Official Invoice (PDF)
+              </Typography>
+              <iframe
+                src={invoicePdfUrl}
+                title="Invoice PDF"
+                width="100%"
+                height="600px"
+                style={{ border: "1px solid #ccc", borderRadius: "8px" }}
+              />
             </Box>
-          ))}
-
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{ mt: 3, textAlign: "right" }}
-          >
-            Total: ${totalPrice}
-          </Typography>
-        </Paper>
+          ) : (
+            <Typography
+              color="error"
+              textAlign="center"
+              sx={{ mt: 4, fontWeight: 500 }}
+            >
+              Invoice file not available.
+            </Typography>
+          )}
+        </>
       )}
     </Box>
   );
