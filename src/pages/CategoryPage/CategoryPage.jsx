@@ -25,6 +25,7 @@ export default function CategoryPage() {
   const { categoryId } = useParams();
   const [products, setProducts] = useState([]);
   const [categoryName, setCategoryName] = useState("Products");
+  const [categoryDetails, setCategoryDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState(null);
   const [favorites, setFavorites] = useState({});
@@ -36,6 +37,20 @@ export default function CategoryPage() {
 
   useEffect(() => {
     setSortOption("");
+    setLoading(true);
+  }, [categoryId]);
+
+  useEffect(() => {
+    if (!categoryId) return;
+    axios
+      .get(`http://localhost:8080/api/categories/${categoryId}`)
+      .then((response) => {
+        setCategoryDetails(response.data);
+        setCategoryName(response.data.categoryName);
+      })
+      .catch((error) => {
+        console.error("Error loading category details:", error);
+      });
   }, [categoryId]);
 
   useEffect(() => {
@@ -45,21 +60,6 @@ export default function CategoryPage() {
       .get(`http://localhost:8080/api/products/by-category/${categoryId}`)
       .then((response) => {
         setProducts(response.data.content || []);
-
-        if (response.data.content?.length > 0) {
-          const firstProductCategory = response.data.content[0].category;
-          if (
-            firstProductCategory.parentCategory &&
-            firstProductCategory.parentCategory.categoryId === categoryId
-          ) {
-            setCategoryName(firstProductCategory.parentCategory.categoryName);
-          } else {
-            setCategoryName(firstProductCategory.categoryName);
-          }
-        } else {
-          setCategoryName("Unknown Category");
-        }
-
         setLoading(false);
       })
       .catch((error) => {
@@ -99,9 +99,17 @@ export default function CategoryPage() {
           <Typography variant="h4" fontWeight="bold">
             {categoryName}
           </Typography>
+          {categoryDetails?.parentCategory && (
+            <Typography variant="subtitle1" color="text.primary" mt={1}>
+              <Link to={`/category/${categoryDetails.parentCategory.categoryId}`}
+                style={{ textDecoration: 'none', color: '#1f1c66' }}>
+                {`${categoryDetails.parentCategory.categoryName}`}
+              </Link>
+            </Typography>
+          )}
           {products.length > 0 && (
             <Typography variant="subtitle1" color="text.secondary" mt={1}>
-              We found products matching this category.
+              We found {products.length} products matching this category.
             </Typography>
           )}
         </Box>
@@ -226,7 +234,7 @@ export default function CategoryPage() {
                     }}
                     sx={{
                       mt: "auto",
-                      borderRadius: "0 0 15px 15px",
+                      borderRadius: "0 0 10px 10px",
                       backgroundColor: cartClicked[product.productId] ? "#2ecc71" : "#1f1c66",
                       color: "white",
                       fontWeight: "bold",
@@ -244,7 +252,9 @@ export default function CategoryPage() {
               </Grid>
             ))
           ) : (
-            <Typography>No products found in this category.</Typography>
+            <Grid item xs={12}>
+              <Typography variant="h6">No products found in this category.</Typography>
+            </Grid>
           )}
         </Grid>
       </Box>
