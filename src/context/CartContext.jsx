@@ -13,14 +13,14 @@ export const CartProvider = ({ children }) => {
       return [];
     }
   });
-  
+
 
   useEffect(() => {
     localStorage.setItem("shoppingCart", JSON.stringify(cartItems));
   }, [cartItems]);
 
   const clearCart = () => {
-    setCartItems([]);                  
+    setCartItems([]);
     localStorage.setItem("shoppingCart", "[]");
   };
 
@@ -28,27 +28,87 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-    const updateContextCart = (newCart) => {
-      setCartItems(newCart);
-      localStorage.setItem("shoppingCart", JSON.stringify(newCart));
-    };
-  
-    // 🔁 Move fetchUserCart here:
-    const fetchUserCart = async (customerId, jwtToken) => {
+  const updateContextCart = (newCart) => {
+    setCartItems(newCart);
+    localStorage.setItem("shoppingCart", JSON.stringify(newCart));
+  };
+
+  // 🔁 Move fetchUserCart here:
+  const fetchUserCart = async (customerId, jwtToken) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Cart fetch failed with status:", response.status);
+        return;
+      }
+
+      const result = await response.json();
+
+      if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
+        // Modified this section to include all product details
+        const formattedCart = result.shoppingCartItems.map(item => {
+          return {
+            productId: item.product.productId,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            shoppingCartItemId: item.shoppingCartItemId,
+            description: item.product.description,
+            stock: item.product.stock,
+            image_url: item.product.image_url || item.product.imageUrl, // Handle different naming conventions
+            category: item.product.category,
+            // Add any other product fields you might need
+          };
+        });
+
+        setCartItems(formattedCart);
+        localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
+      } else {
+        console.warn("Expected shoppingCartItems not found in response:", result);
+      }
+    } catch (error) {
+      console.error("fetchUserCart error:", error);
+    }
+  };
+
+
+  const addToCart = async (product, quantity = 1) => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+
+    if (!jwtToken || !customerId) {
+      const updatedCart = [...cartItems];
+      const index = updatedCart.findIndex((item) => item.productId === product.productId);
+
+      if (index > -1) {
+        updatedCart[index].quantity += quantity;
+      } else {
+        updatedCart.push({ ...product, quantity });
+      }
+
+      setCartItems(updatedCart);
+    } else {
       try {
-        const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+        const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
+          method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
+          body: JSON.stringify({
+            customerId,
+            productId: product.productId,
+            quantity,
+          }),
         });
-  
-        if (!response.ok) {
-          console.error("Cart fetch failed with status:", response.status);
-          return;
-        }
-  
+
         const result = await response.json();
-  
+ 
         if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
           const formattedCart = result.shoppingCartItems.map(item => {
             const formattedItem = {
@@ -133,9 +193,9 @@ export const CartProvider = ({ children }) => {
         } catch (err) {
           console.error("Error while adding to cart:", err);
         }
-      }
-    };
-    
+    }
+  };
+
 
   return (
     <CartContext.Provider value={{ cartItems, setCartItems, getCartTotalQuantity, addToCart, fetchUserCart, updateContextCart, clearCart }}>

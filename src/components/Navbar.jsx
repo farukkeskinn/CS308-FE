@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate} from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginIcon from '@mui/icons-material/Login';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchBar from "./SearchBar";
 import { Box } from "@mui/material";
 import Badge from "@mui/material/Badge";
-import { useCartContext } from "../context/CartContext"; 
+import { useCartContext } from "../context/CartContext";
 
 
 const Navbar = () => {
@@ -18,14 +18,12 @@ const Navbar = () => {
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const { cartItems, setCartItems } = useCartContext();
 
-  const navigate = useNavigate();
   const location = useLocation();
 
   const totalQty = Array.isArray(cartItems) ? cartItems.reduce((t, itm) => t + (itm?.quantity || 0), 0) : 0;
-  
-  // Check if user is a customer (not a manager)
+
   const isCustomer = token && userRole !== "SALES_MANAGER" && userRole !== "PRODUCT_MANAGER";
-  
+
   useEffect(() => {
     fetch("http://localhost:8080/api/categories")
       .then((res) => res.json())
@@ -36,7 +34,7 @@ const Navbar = () => {
       .catch((err) => {
         console.error("Error fetching categories:", err);
         setLoading(false);
-    });
+      });
   }, [token]);
 
   useEffect(() => {
@@ -45,14 +43,35 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
+    localStorage.clear();
+
     setToken(null);
     setProfileMenuOpen(false);
     setUserRole("");
     setCartItems([]); // 🧹 Clear cart state
 
-    localStorage.clear();
+    window.history.replaceState(null, "", "/");
 
-    navigate("/");
+    fetch("http://localhost:8080/api/auth/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).catch(error => {
+      console.error("Error logging out:", error);
+    }).finally(() => {
+      window.location.href = "/";
+    });
+  };
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    window.history.replaceState(null, "", "/");
+    if (location.pathname === "/") {
+      window.location.reload();
+    } else {
+      window.location.href = "/";
+    }
   };
 
   const navTopStyle = {
@@ -66,7 +85,7 @@ const Navbar = () => {
   const navBottomStyle = {
     backgroundColor: "#1f1c66",
     marginTop: "3px",
-    
+
   };
 
   const navBrandStyle = {
@@ -109,19 +128,14 @@ const Navbar = () => {
             to="/"
             className="navbar-brand"
             style={navBrandStyle}
-            onClick={(e) => {
-              if (location.pathname === "/") {
-                e.preventDefault();
-                window.location.reload();
-              }
-            }}
+            onClick={handleLogoClick}
             onMouseEnter={(e) => (e.target.style.transform = "scale(1.2)")}
             onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
           >
             NEPTUNE
           </Link>
           <Box sx={{ display: "flex", justifyContent: "center", flexGrow: 1 }}>
-            <SearchBar/>
+            <SearchBar />
           </Box>
 
           <div className="d-flex align-items-center gap-2">
@@ -165,7 +179,7 @@ const Navbar = () => {
                         >
                           Order History
                         </Link>
-                    </div>
+                      </div>
                     )}
                     <button className="btn btn-danger w-100 py-2" onClick={handleLogout}>
                       Logout
@@ -188,7 +202,7 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
-            
+
             {/* Show shopping cart icon only for customers or non-logged in users */}
             {!token || isCustomer ? (
               <Link to="/cart" className="text-white fs-5">
@@ -264,12 +278,12 @@ const Navbar = () => {
                                 className="text-decoration-none"
                                 style={dropdownLinkStyle}
                                 onMouseEnter={(e) =>
-                                  (e.currentTarget.style.backgroundColor =
-                                    "#f1f1f1")
+                                (e.currentTarget.style.backgroundColor =
+                                  "#f1f1f1")
                                 }
                                 onMouseLeave={(e) =>
-                                  (e.currentTarget.style.backgroundColor =
-                                    "transparent")
+                                (e.currentTarget.style.backgroundColor =
+                                  "transparent")
                                 }
                               >
                                 {sub.categoryName}

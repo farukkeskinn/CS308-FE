@@ -1,7 +1,4 @@
-// src/pages/Checkout.js
 import { useCartContext } from "../../context/CartContext"; // CartContext import
-//import { useCartContext } from "../../context/CartContext"; // CartContext import
-
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -33,13 +30,14 @@ const countryCityMap = {
 const nameRegex = /^[A-Za-zÇÖÜĞŞİçöüğş\s]+$/;
 const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
 
-export default function Checkout() { 
-  const { cartItems, clearCart, fetchUserCart } = useCartContext();
+export default function Checkout() {
+  const { cartItems, clearCart } = useCartContext();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [shippingData, setShippingData] = useState({
     firstName: "",
     lastName: "",
+    addressName: "",
     address: "",
     country: "",
     city: "",
@@ -52,7 +50,7 @@ export default function Checkout() {
     expiry: "",
     cvv: "",
   });
-  
+
   const [formError, setFormError] = useState("");
 
   const handleNext = () => {
@@ -118,25 +116,14 @@ export default function Checkout() {
       errors.push("CVV (3 digits)");
     }
     if (!expiryRegex.test(paymentData.expiry.trim())) {
-  errors.push("Expiry Date (MM/YY)");
-} else {
-  const [mm, yy] = paymentData.expiry.split("/").map(Number);
-  if (yy < 25 || (yy === 25 && mm < 4)) {
-    errors.push("Expiry Date must be after 04/25");
-  }
-}
+      errors.push("Expiry Date (MM/YY)");
+    } else {
+      const [mm, yy] = paymentData.expiry.split("/").map(Number);
+      if (yy < 25 || (yy === 25 && mm < 4)) {
+        errors.push("Expiry Date must be after 04/25");
+      }
+    }
 
-
-if (!expiryRegex.test(paymentData.expiry.trim())) {
-  errors.push("Expiry Date (MM/YY)");
-} else {
-  const [mm, yy] = paymentData.expiry.split("/").map(Number);
-  if (yy < 25 || (yy === 25 && mm < 4)) {
-    errors.push("Expiry Date must be after 04/25");
-  }
-}
-
-  
     if (errors.length > 0) {
       setFormError(createErrorMessage(errors));
       return false;
@@ -158,44 +145,51 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
       cardHolderName: paymentData.cardName,
       expiryDate: paymentData.expiry,
       cvv: paymentData.cvv,
+
+      addressName: shippingData.addressName,
+      address: shippingData.address,
+      city: shippingData.city,
+      country: shippingData.country,
+      zipCode: shippingData.zipCode,
+      phoneNumber: shippingData.phoneNumber,
     };
-  
+
     try {
-      const token = localStorage.getItem("jwtToken"); // ✅ doğru key
-  
+      const token = localStorage.getItem("jwtToken");
+
       const response = await fetch("http://localhost:8080/api/payments/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // 🔐 token doğru şekilde eklendi
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(paymentPayload),
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Checkout error:", errorText);
         alert("Checkout failed: " + errorText);
         return;
       }
-  
+
       const result = await response.json();
       console.log("Checkout successful:", result);
-  
+
       clearCart();
-      const customerId = localStorage.getItem("customerId");
-      if (customerId && token) {
-        fetchUserCart(customerId, token);
-      }
-      
-      navigate("/thank-you");
-  
+
+      navigate("/thank-you", {
+        state: {
+          invoicePdfUrl: result.invoicePdfUrl,
+        },
+      });
+
     } catch (error) {
       console.error("Checkout failed:", error);
       alert("An error occurred during checkout.");
     }
   };
-  
+
   const handleShippingChange = (e) => {
     const { name, value } = e.target;
     if (name === "phoneNumber") {
@@ -256,22 +250,12 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
     return groups.join(" ");
   };
 
-  const generateExpiryOptions = () => {
-    const now = new Date();
-    const options = [];
-    let year = 2025;
-    let month = 4;
-    for (let i = 0; i < 60; i++) {
-      if (month > 12) {
-        month = 1;
-        year++;
-      }
-      const mm = month.toString().padStart(2, "0");
-      const yy = year.toString().slice(2);
-      options.push({ label: `${mm}/${yy}`, value: `${mm}/${yy}` });
-      month++;
+  const formatExpiryInput = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 4);
+    if (digits.length < 3) {
+      return digits;
     }
-    return options;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
   };
 
   const getStepContent = (step) => {
@@ -312,6 +296,22 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
             label="Last Name"
             name="lastName"
             value={shippingData.lastName}
+            onChange={handleShippingChange}
+            fullWidth
+            inputProps={{
+              pattern: "[A-Za-zÇÖÜĞŞİçöüğş\\s]+",
+              onInput: (e) => {
+                e.target.value = e.target.value.replace(/[^A-Za-zÇÖÜĞŞİçöüğş\s]/g, "");
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            required
+            label="Address Name"
+            name="addressName"
+            value={shippingData.addressName}
             onChange={handleShippingChange}
             fullWidth
             inputProps={{
@@ -398,15 +398,6 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
     </Box>
   );
 
-  
-const formatExpiryInput = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, 4);
-    if (digits.length < 3) {
-      return digits;
-    }
-    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  };
-  
   const renderPaymentForm = () => (
     <Box sx={{ mt: 2 }}>
       <Grid container spacing={2}>
@@ -438,7 +429,7 @@ const formatExpiryInput = (value) => {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-         <TextField
+          <TextField
             required
             label="Expiry Date (MM/YY)"
             name="expiry"
@@ -447,11 +438,11 @@ const formatExpiryInput = (value) => {
             fullWidth
             placeholder="MM/YY"
             inputProps={{
-            maxLength: 5,
-            onInput: (e) => {
-            e.target.value = formatExpiryInput(e.target.value);
-            },
-                }}
+              maxLength: 5,
+              onInput: (e) => {
+                e.target.value = formatExpiryInput(e.target.value);
+              },
+            }}
           />
         </Grid>
 
@@ -467,7 +458,7 @@ const formatExpiryInput = (value) => {
           />
         </Grid>
       </Grid>
-  
+
       {/* 💳 Virtual Card Görseli */}
       <Box
         sx={{
@@ -476,7 +467,7 @@ const formatExpiryInput = (value) => {
           color: "#fff",
           p: 4,
           borderRadius: 3,
-          width:"100%",
+          width: "100%",
           maxWidth: 420,
           margin: "24px auto 0",
           minHeight: 220,
@@ -507,7 +498,6 @@ const formatExpiryInput = (value) => {
       </Box>
     </Box>
   );
-  
 
   const renderReviewOrder = () => (
     <Box sx={{ mt: 2 }}>
@@ -570,94 +560,113 @@ const formatExpiryInput = (value) => {
   );
 
   const renderOrderSummary = () => (
-  <Paper
-    sx={{
-      p: 3,
-      boxShadow: 3,
-      borderRadius: 3,
-      background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-    }}
-    elevation={3}
-  >
-    <Typography variant="h5" mb={3} textAlign="center" fontWeight="bold">
-      Order Summary
-    </Typography>
-    {cartItems.map((item, index) => (
-      <Box
-        key={index}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-          p: 1,
-          borderBottom: "1px solid #ccc",
-        }}
-      >
-        <Typography>{item.name} x {item.quantity}</Typography>
-        <Typography fontWeight="bold">
-          ${(item.price * item.quantity).toFixed(2)}
+    <Paper
+      sx={{
+        p: 3,
+        boxShadow: 3,
+        borderRadius: 3,
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+      }}
+      elevation={3}
+    >
+      <Typography variant="h5" mb={3} textAlign="center" fontWeight="bold">
+        Order Summary
+      </Typography>
+      {cartItems.map((item, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            p: 1,
+            borderBottom: "1px solid #ccc",
+          }}
+        >
+          <Typography>{item.name} x {item.quantity}</Typography>
+          <Typography fontWeight="bold">
+            ${(item.price * item.quantity).toFixed(2)}
+          </Typography>
+        </Box>
+      ))}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+        <Typography variant="h6" fontWeight="bold">
+          Total:
+        </Typography>
+        <Typography variant="h6" fontWeight="bold">
+          $
+          {cartItems
+            .reduce((acc, item) => acc + item.price * item.quantity, 0)
+            .toFixed(2)}
         </Typography>
       </Box>
-    ))}
-    <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-      <Typography variant="h6" fontWeight="bold">
-        Total:
-      </Typography>
-      <Typography variant="h6" fontWeight="bold">
-        $
-        {cartItems
-          .reduce((acc, item) => acc + item.price * item.quantity, 0)
-          .toFixed(2)}
-      </Typography>
-    </Box>
-  </Paper>
-);
-
+    </Paper>
+  );
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", my: 4 }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        Checkout
-      </Typography>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh"
+      }}
+    >
+      <Box component="main" sx={{ flexGrow: 1, py: 4 }}>
+        <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+          {formError && (
+            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+              {formError}
+            </Alert>
+          )}
 
-      {formError && (
-        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-          {formError}
-        </Alert>
-      )}
+          <Grid container spacing={2} sx={{ mt: 3 }}>
+            <Grid item xs={12} md={8}>
+              {getStepContent(activeStep)}
 
-      <Grid container spacing={2} sx={{ mt: 3 }}>
-        <Grid item xs={12} md={8}>
-          {getStepContent(activeStep)}
+              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  variant="contained"
+                  color="inherit"
+                >
+                  Back
+                </Button>
+                <Button variant="contained" onClick={handleNext} sx={{ backgroundColor: "#1f1c66" }}>
+                  {activeStep === steps.length - 1 ? "Place Order" : "Next"}
+                </Button>
+              </Box>
+            </Grid>
 
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-            <Button
-              disabled={activeStep === 0}
-              onClick={handleBack}
-              variant="contained"
-              color="inherit"
-            >
-              Back
-            </Button>
-            <Button variant="contained" onClick={handleNext}>
-              {activeStep === steps.length - 1 ? "Place Order" : "Next"}
-            </Button>
-          </Box>
-        </Grid>
+            <Grid item xs={12} md={4}>
+              {renderOrderSummary()}
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
 
-        <Grid item xs={12} md={4}>
-          {renderOrderSummary()}
-        </Grid>
-      </Grid>
+      {/* Footer */}
+      <Box
+        component="footer"
+        sx={{
+          backgroundColor: "#212529",
+          color: "white",
+          textAlign: "center",
+          py: 2,
+          mt: "auto",
+        }}
+      >
+        &copy; 2025 Neptune. All rights reserved.
+      </Box>
     </Box>
   );
 }

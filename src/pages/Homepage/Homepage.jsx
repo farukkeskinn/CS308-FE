@@ -22,7 +22,7 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import { useCartContext } from "../../context/CartContext";
 
 export default function HomePage() {
-  const [products, setProducts] = useState([]); 
+  const [products, setProducts] = useState([]);
   const [favorites, setFavorites] = useState({});
   const [sortOption, setSortOption] = useState("SORT");
   const [cartClicked, setCartClicked] = useState({});
@@ -39,8 +39,8 @@ export default function HomePage() {
   const sortedProducts = [...products].sort((a, b) => {
     if (sortOption === "Price: Low to High") return a.price - b.price;
     if (sortOption === "Price: High to Low") return b.price - a.price;
-    if (sortOption === "Rating: Low to High") return a.rating - b.rating;
-    if (sortOption === "Rating: High to Low") return b.rating - a.rating;
+    if (sortOption === "Popularity: Low to High") return a.itemSold - b.itemSold;
+    if (sortOption === "Popularity: High to Low") return b.itemSold - a.itemSold;
     return 0;
   });
 
@@ -84,8 +84,8 @@ export default function HomePage() {
           <Menu anchorEl={anchorEl} open={open} onClose={() => handleClose(null)}>
             <MenuItem onClick={() => handleClose("Price: Low to High")}>Price: Low to High</MenuItem>
             <MenuItem onClick={() => handleClose("Price: High to Low")}>Price: High to Low</MenuItem>
-            <MenuItem onClick={() => handleClose("Rating: Low to High")}>Rating: Low to High</MenuItem>
-            <MenuItem onClick={() => handleClose("Rating: High to Low")}>Rating: High to Low</MenuItem>
+            <MenuItem onClick={() => handleClose("Popularity: Low to High")}>Popularity: Low to High</MenuItem>
+            <MenuItem onClick={() => handleClose("Popularity: High to Low")}>Popularity: High to Low</MenuItem>
           </Menu>
         </Box>
 

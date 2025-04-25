@@ -1,21 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 
 const AuthNavbar = () => {
+  const location = useLocation();
+
   const navStyle = {
     backgroundColor: "#1f1c66",
     padding: "0.5rem 1.5rem",
     height: "72px",
     display: "flex",
     alignItems: "center",
-  };
-
-  const linkStyle = {
-    fontWeight: "bold",
-    fontSize: "1.75rem",
-    color: "white",
-    textDecoration: "none",
-    transition: "transform 0.3s ease-in-out",
   };
 
   const sloganStyle = {
@@ -26,12 +20,22 @@ const AuthNavbar = () => {
     whiteSpace: "nowrap",
   };
 
-  const handleMouseEnter = (e) => {
-    e.target.style.transform = "scale(1.2)";
+  const navBrandStyle = {
+    transition: "transform 0.3s ease-in-out",
+    fontWeight: "bold",
+    fontSize: "1.75rem",
+    color: "white",
+    textDecoration: "none",
   };
 
-  const handleMouseLeave = (e) => {
-    e.target.style.transform = "scale(1)";
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    window.history.replaceState(null, "", "/");
+    if (location.pathname === "/") {
+      window.location.reload();
+    } else {
+      window.location.href = "/";
+    }
   };
 
   return (
@@ -47,9 +51,11 @@ const AuthNavbar = () => {
         <Box sx={{ width: "200px", display: "flex", alignItems: "center" }}>
           <Link
             to="/"
-            style={linkStyle}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            className="navbar-brand"
+            style={navBrandStyle}
+            onClick={handleLogoClick}
+            onMouseEnter={(e) => (e.target.style.transform = "scale(1.2)")}
+            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
           >
             NEPTUNE
           </Link>

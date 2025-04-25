@@ -84,14 +84,14 @@ export default function SearchPage() {
             mb: 4,
           }}
         >
-            <Typography variant="h4" fontWeight="bold">
-                Search Results for "{query}"
+          <Typography variant="h4" fontWeight="bold">
+            Search Results for "{query}"
+          </Typography>
+          {products.length > 0 && !loading && (
+            <Typography variant="subtitle1" color="text.secondary" mt={1}>
+              We found {products.length} {products.length === 1 ? "product" : "products"} matching your search.
             </Typography>
-            {products.length > 0 && !loading && (
-                <Typography variant="subtitle1" color="text.secondary" mt={1}>
-                We found products matching your search.
-                </Typography>
-            )}
+          )}
         </Box>
 
         <Box display="flex" justifyContent="flex-end" mb={3}>
@@ -214,7 +214,7 @@ export default function SearchPage() {
                     }}
                     sx={{
                       mt: "auto",
-                      borderRadius: "0 0 15px 15px",
+                      borderRadius: "0 0 10px 10px",
                       backgroundColor: cartClicked[product.productId] ? "#2ecc71" : "#1f1c66",
                       color: "white",
                       fontWeight: "bold",

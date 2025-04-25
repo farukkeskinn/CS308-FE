@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
-
 import {
   Box,
   Typography,
@@ -45,7 +43,7 @@ export default function ShoppingCart() {
     const updatedCart = [...cartItems];
     const jwtToken = localStorage.getItem("jwtToken");
     const customerId = localStorage.getItem("customerId");
-  
+
     // 🔐 Logged-in user: update DB
     if (jwtToken && customerId) {
       try {
@@ -82,7 +80,6 @@ export default function ShoppingCart() {
         return;
       }
     }
-  
     // 👤 Guest user logic
     const stock = updatedCart[index].stock;
   
@@ -98,20 +95,17 @@ export default function ShoppingCart() {
       updatedCart[index].quantity = newQuantity;
       console.log("Updated cart:", updatedCart);
     }
-  
+
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
-  
-  
-  
 
   const decreaseQuantity = async (index, newQuantity) => {
     const updatedCart = [...cartItems];
     const jwtToken = localStorage.getItem("jwtToken");
     const customerId = localStorage.getItem("customerId");
-  
+
     // 🔐 Logged-in user: update DB
     if (jwtToken && customerId) {
       try {
@@ -122,6 +116,7 @@ export default function ShoppingCart() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${jwtToken}`,
           },
+
           body: JSON.stringify({
             itemId: item.shoppingCartItemId,
             quantity: 1,
@@ -141,27 +136,25 @@ export default function ShoppingCart() {
         return;
       }
     }
-  
-    // 🧠 Local cart update (Guest)
+
     if (newQuantity === 0) {
       updatedCart.splice(index, 1);
     } else {
       updatedCart[index].quantity = newQuantity;
     }
-  
+
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
-  
-  
+
   const removeItemFromCart = async (index) => {
     const updatedCart = [...cartItems];
     const removedItem = updatedCart[index];
-  
+
     const jwtToken = localStorage.getItem("jwtToken");
     const customerId = localStorage.getItem("customerId");
-  
+
     // 🔐 Send delete to backend if logged in
     console.log("🗑 Removing from backend:", removedItem.shoppingCartItemId);
     if (jwtToken && customerId && removedItem?.shoppingCartItemId) {
@@ -179,16 +172,13 @@ export default function ShoppingCart() {
         console.error("❌ Failed to remove item from server:", error);
       }
     }
-  
+
     // ✅ Local update (unchanged)
     updatedCart.splice(index, 1);
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
-  
-
-
 
   const emptyCart = async () => {
     const jwtToken = localStorage.getItem("jwtToken");
@@ -243,23 +233,23 @@ export default function ShoppingCart() {
       setOpenDialog(true);
       return;
     }
-  
+
     if (hasOutOfStockItem) {
       setErrorMessage("⚠️ Please remove out-of-stock items to proceed.");
       return;
     }
-  
+
     if (cartItems.length === 0) {
       setErrorMessage("🛒 Your cart is empty.");
       return;
     }
-  
+
     // ✅ All checks passed – proceed
     navigate("/checkout");
   };
-  
-  
-  
+
+
+
 
   return (
     <Box
@@ -279,7 +269,7 @@ export default function ShoppingCart() {
             Shopping Cart
           </Typography>
         </Paper>
-  
+
         <Grid container spacing={4}>
           <Grid item xs={12} md={8}>
             <Box sx={{ backgroundColor: "#1f1c66", p: 3, borderRadius: 2 }}>
@@ -386,17 +376,17 @@ export default function ShoppingCart() {
               )}
             </Box>
           </Grid>
-  
+
           <Grid item xs={12} md={4}>
             <Card sx={{ p: 3 }}>
               <Typography variant="h6">Total: ${totalPrice}</Typography>
-  
+
               {errorMessage && (
                 <Alert severity="error" sx={{ my: 2 }}>
                   {errorMessage}
                 </Alert>
               )}
-  
+
               <Button
                 fullWidth
                 variant="contained"
@@ -417,7 +407,7 @@ export default function ShoppingCart() {
               >
                 Go To Checkout
               </Button>
-  
+
               <Button
                 fullWidth
                 variant="outlined"
@@ -438,7 +428,7 @@ export default function ShoppingCart() {
               >
                 Continue Shopping
               </Button>
-  
+
               <Button
                 fullWidth
                 variant="contained"
@@ -462,7 +452,7 @@ export default function ShoppingCart() {
             </Card>
           </Grid>
         </Grid>
-  
+
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Login Required</DialogTitle>
           <DialogContent>
@@ -474,7 +464,7 @@ export default function ShoppingCart() {
           </DialogActions>
         </Dialog>
       </Box>
-  
+
       {/* Sticky footer */}
       <Box
         component="footer"
