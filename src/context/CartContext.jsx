@@ -50,29 +50,41 @@ export const CartProvider = ({ children }) => {
       const result = await response.json();
 
       if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
-        // Modified this section to include all product details
         const formattedCart = result.shoppingCartItems.map(item => {
-          return {
+          const formattedItem = {
+            product: item.product,
             productId: item.product.productId,
             name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            shoppingCartItemId: item.shoppingCartItemId,
+            model: item.product.model,
             description: item.product.description,
+            distributor: item.product.distributor,
+            categoryName: item.product.category.categoryName,
+            categoryId: item.product.category.categoryId,
+            itemSold: item.product.itemSold,
+            price: item.product.price,
+            cost: item.product.cost,
             stock: item.product.stock,
-            image_url: item.product.image_url || item.product.imageUrl, // Handle different naming conventions
-            category: item.product.category,
-            // Add any other product fields you might need
+            image_url: item.product.image_url,
+            serialNumber: item.product.serialNumber,
+            warrantyStatus: item.product.warrantyStatus,
+
+
+            quantity: item.quantity,
+            shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
           };
+          console.log("🛒 Formatted Cart Item:", formattedItem); // Log each item
+
+          return formattedItem;
         });
+
 
         setCartItems(formattedCart);
         localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
       } else {
-        console.warn("Expected shoppingCartItems not found in response:", result);
+        console.warn("Beklenen shoppingCartItems yok:", result);
       }
     } catch (error) {
-      console.error("fetchUserCart error:", error);
+      console.error("fetchUserCart hatası:", error);
     }
   };
 
@@ -108,91 +120,19 @@ export const CartProvider = ({ children }) => {
         });
 
         const result = await response.json();
- 
-        if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
-          const formattedCart = result.shoppingCartItems.map(item => {
-            const formattedItem = {
-              product: item.product,
-              productId: item.product.productId,
-              name: item.product.name,
-              model: item.product.model,
-              description: item.product.description,
-              distributor: item.product.distributor,
-              categoryName: item.product.category.categoryName,
-              categoryId: item.product.category.categoryId,
-              itemSold: item.product.itemSold,
-              price: item.product.price,
-              cost: item.product.cost,
-              stock: item.product.stock,
-              image_url: item.product.image_url,
-              serialNumber: item.product.serialNumber,
-              warrantyStatus: item.product.warrantyStatus,
 
-              
-              quantity: item.quantity,
-              shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
-            };
-            console.log("🛒 Formatted Cart Item:", formattedItem); // Log each item
-
-            return formattedItem;
-          });
-          
-          
-          setCartItems(formattedCart);
-          localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
-        } else {
-          console.warn("Beklenen shoppingCartItems yok:", result);
-        }
-      } catch (error) {
-        console.error("fetchUserCart hatası:", error);
-      }
-    };
-  
-
-    const addToCart = async (product, quantity = 1) => {
-      const jwtToken = localStorage.getItem("jwtToken");
-      const customerId = localStorage.getItem("customerId");
-    
-      if (!jwtToken || !customerId) {
-        const updatedCart = [...cartItems];
-        const index = updatedCart.findIndex((item) => item.productId === product.productId);
-    
-        if (index > -1) {
-          updatedCart[index].quantity += quantity;
-        } else {
-          updatedCart.push({ ...product, quantity });
-        }
-    
-        setCartItems(updatedCart);
-      } else {
-        try {
-          const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${jwtToken}`,
-            },
-            body: JSON.stringify({
-              customerId,
-              productId: product.productId,
-              quantity,
-            }),
-          });
-    
-          const result = await response.json();
-    
-          if (response.ok) {
-            if (result.message === "There is no enough stock") {
-              alert("There is no enough stock");
-            } else {
-              await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
-            }
+        if (response.ok) {
+          if (result.message === "There is no enough stock") {
+            alert("There is no enough stock");
           } else {
-            console.error("Cart API error:", result.message);
+            await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
           }
-        } catch (err) {
-          console.error("Error while adding to cart:", err);
+        } else {
+          console.error("Cart API error:", result.message);
         }
+      } catch (err) {
+        console.error("Error while adding to cart:", err);
+      }
     }
   };
 
