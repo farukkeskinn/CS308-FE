@@ -8,10 +8,12 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Navbar from "../../components/AuthNavbar";
+import { useCartContext } from "../../context/CartContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const mainColor = "#1f1c66";
+  const { setCartItems, fetchUserCart } = useCartContext();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -27,6 +29,36 @@ export default function RegisterPage() {
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
     setErrors({ ...errors, [field]: "" });
+  };
+
+  const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/cart-management/merge-guest-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          customerId,
+          guestItems: guestCart.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok && result.clearGuestCart) {
+        localStorage.removeItem("shoppingCart");
+        setCartItems([]);
+        await fetchUserCart(customerId, jwtToken);
+      }
+  
+    } catch (err) {
+      console.error("Merge işlemi başarısız:", err);
+    }
   };
 
   const validate = () => {
@@ -60,8 +92,19 @@ export default function RegisterPage() {
       if (response.ok) {
         localStorage.setItem("jwtToken", data.token);
         localStorage.setItem("customerId", data.customerId);
-        setMessage("Registration successful! Redirecting...");
-        setTimeout(() => navigate("/"), 2000);
+        localStorage.setItem("role", data.role);
+        console.log("the role is", data.role);
+
+        const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+        if (guestCart.length > 0) {
+          await mergeGuestCart(data.customerId, data.token, guestCart);
+        } else {
+          await fetchUserCart(data.customerId, data.token);
+        }
+
+          setMessage("Registration successful! Redirecting...");
+          setTimeout(() => navigate("/"), 2000);
       } else {
         setErrors({ email: data.message || "Registration failed." });
       }
