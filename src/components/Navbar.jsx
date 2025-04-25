@@ -8,6 +8,7 @@ import { Box } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import { useCartContext } from "../context/CartContext";
 
+
 const Navbar = () => {
   const [categories, setCategories] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -15,7 +16,7 @@ const Navbar = () => {
   const [token, setToken] = useState(localStorage.getItem("jwtToken"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
-  const { cartItems } = useCartContext();
+  const { cartItems, setCartItems } = useCartContext();
 
   const location = useLocation();
 
@@ -47,6 +48,7 @@ const Navbar = () => {
     setToken(null);
     setProfileMenuOpen(false);
     setUserRole("");
+    setCartItems([]); // 🧹 Clear cart state
 
     window.history.replaceState(null, "", "/");
 

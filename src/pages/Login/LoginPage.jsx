@@ -81,6 +81,7 @@ const handleLogin = async (e) => {
       localStorage.setItem("jwtToken", data.token);
       localStorage.setItem("customerId", data.customerId);
       localStorage.setItem("role", data.role);
+      console.log("the role is", data.role);
 
       const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
 

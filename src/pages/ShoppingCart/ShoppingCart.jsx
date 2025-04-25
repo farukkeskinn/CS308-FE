@@ -47,8 +47,8 @@ export default function ShoppingCart() {
     // 🔐 Logged-in user: update DB
     if (jwtToken && customerId) {
       try {
-        const product = updatedCart[index]; // productId is required
-        await fetch("http://localhost:8080/api/cart-management/add-item", {
+        const product = updatedCart[index].product; // ✅ fix: use .product for logged-in cart
+        const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -57,26 +57,49 @@ export default function ShoppingCart() {
           body: JSON.stringify({
             customerId,
             productId: product.productId,
-            quantity: 1, // increase by 1
+            quantity: 1,
           }),
         });
-      } catch (error) {
-        console.error("Error increasing quantity on server:", error);
+  
+        const result = await response.json();
+  
+        if (response.ok) {
+          if (result.message === "There is no enough stock") {
+            alert("There is no enough stock");
+            return;
+          } else {
+            await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
+            return;
+          }
+        } else {
+          console.error("Cart API error:", result.message);
+          return;
+        }
+      } catch (err) {
+        console.error("Error while adding to cart:", err);
+        return;
       }
     }
-
-    // 🧠 Local cart update
+    // 👤 Guest user logic
+    const stock = updatedCart[index].stock;
+  
+    if (newQuantity > stock) {
+      alert(`Only ${stock} units available in stock.`);
+      return;
+    }
+  
     if (newQuantity === 0) {
       updatedCart.splice(index, 1);
     } else {
+      console.log("Updating quantity:", newQuantity);
       updatedCart[index].quantity = newQuantity;
+      console.log("Updated cart:", updatedCart);
     }
 
     setCartItems(updatedCart);
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
-
 
   const decreaseQuantity = async (index, newQuantity) => {
     const updatedCart = [...cartItems];
@@ -87,7 +110,7 @@ export default function ShoppingCart() {
     if (jwtToken && customerId) {
       try {
         const item = updatedCart[index];
-        await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
+        const response = await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -99,15 +122,21 @@ export default function ShoppingCart() {
             quantity: 1,
           }),
         });
-
-        await fetchUserCart(customerId, jwtToken); // ✅ Refresh cart from DB
-
+  
+        if (!response.ok) {
+          console.error("Failed to decrease quantity:", await response.text());
+          return;
+        }
+  
+        // ✅ Always sync with backend after any quantity change
+        await fetchUserCart(customerId, jwtToken);
+        return; // 🔁 Let fetchUserCart handle UI update
       } catch (error) {
         console.error("Error decreasing quantity on server:", error);
+        return;
       }
     }
 
-    // 🧠 Local cart update
     if (newQuantity === 0) {
       updatedCart.splice(index, 1);
     } else {
@@ -150,9 +179,6 @@ export default function ShoppingCart() {
     localStorage.setItem("shoppingCart", JSON.stringify(updatedCart));
     updateContextCart(updatedCart);
   };
-
-
-
 
   const emptyCart = async () => {
     const jwtToken = localStorage.getItem("jwtToken");
