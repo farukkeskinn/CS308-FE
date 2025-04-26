@@ -92,17 +92,27 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product, quantity = 1) => {
     const jwtToken = localStorage.getItem("jwtToken");
     const customerId = localStorage.getItem("customerId");
-
+  
     if (!jwtToken || !customerId) {
       const updatedCart = [...cartItems];
       const index = updatedCart.findIndex((item) => item.productId === product.productId);
-
+  
       if (index > -1) {
+        // 🔥 Check if adding would exceed stock
+        if (updatedCart[index].quantity + quantity > product.stock) {
+          alert("Cannot add more than available stock");
+          return; // 🔥 stop here
+        }
         updatedCart[index].quantity += quantity;
       } else {
+        // 🔥 Check if quantity itself exceeds stock
+        if (quantity > product.stock) {
+          alert("Cannot add more than available stock");
+          return; // 🔥 stop here
+        }
         updatedCart.push({ ...product, quantity });
       }
-
+  
       setCartItems(updatedCart);
     } else {
       try {
@@ -118,9 +128,9 @@ export const CartProvider = ({ children }) => {
             quantity,
           }),
         });
-
+  
         const result = await response.json();
-
+  
         if (response.ok) {
           if (result.message === "There is no enough stock") {
             alert("There is no enough stock");
@@ -135,6 +145,7 @@ export const CartProvider = ({ children }) => {
       }
     }
   };
+  
 
 
   return (
