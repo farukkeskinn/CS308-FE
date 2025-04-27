@@ -279,6 +279,7 @@ export default function ProductPage() {
             </Typography>
 
             <IconButton
+              data-testid="toggle-reviews"
               onClick={() => setReviewsVisible(!reviewsVisible)}
               sx={{
                 backgroundColor: "#1f1c66",

@@ -34,12 +34,13 @@ const nameRegex = /^[A-Za-zÇÖÜĞŞİçöüğş\s]+$/;
 const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
 
 export default function Checkout() { 
-  const { cartItems, clearCart, fetchUserCart } = useCartContext();
+  const { cartItems } = useCartContext();
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [shippingData, setShippingData] = useState({
     firstName: "",
     lastName: "",
+    addressName:"",
     address: "",
     country: "",
     city: "",
@@ -182,12 +183,7 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
       const result = await response.json();
       console.log("Checkout successful:", result);
   
-      clearCart();
-      const customerId = localStorage.getItem("customerId");
-      if (customerId && token) {
-        fetchUserCart(customerId, token);
-      }
-      
+      // ✅ Sipariş başarıyla tamamlandıysa yönlendir
       navigate("/thank-you");
   
     } catch (error) {
@@ -312,6 +308,22 @@ if (!expiryRegex.test(paymentData.expiry.trim())) {
             label="Last Name"
             name="lastName"
             value={shippingData.lastName}
+            onChange={handleShippingChange}
+            fullWidth
+            inputProps={{
+              pattern: "[A-Za-zÇÖÜĞŞİçöüğş\\s]+",
+              onInput: (e) => {
+                e.target.value = e.target.value.replace(/[^A-Za-zÇÖÜĞŞİçöüğş\s]/g, "");
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            required
+            label="Address Name"
+            name="addressName"
+            value={shippingData.addressName}
             onChange={handleShippingChange}
             fullWidth
             inputProps={{
@@ -618,7 +630,6 @@ const formatExpiryInput = (value) => {
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", my: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
-        Checkout
       </Typography>
 
       <Stepper activeStep={activeStep} alternativeLabel>
