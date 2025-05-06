@@ -14,8 +14,13 @@ import {
   Box,
   Grid,
   IconButton,
+  Slider,
+  Checkbox,
+  FormControlLabel,
+  MenuList,
 } from "@mui/material";
 import SortIcon from '@mui/icons-material/Sort';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import FavoriteBorder from '@mui/icons-material/FavoriteBorder';
 import Favorite from '@mui/icons-material/Favorite';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
@@ -30,6 +35,12 @@ export default function HomePage() {
   const open = Boolean(anchorEl);
   const { addToCart } = useCartContext();
 
+  // Filter States
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [showInStock, setShowInStock] = useState(true);
+  const [showOutOfStock, setShowOutOfStock] = useState(true);
+
   useEffect(() => {
     axios.get("http://localhost:8080/api/products")
       .then((response) => setProducts(response.data))
@@ -42,6 +53,14 @@ export default function HomePage() {
     if (sortOption === "Popularity: Low to High") return a.itemSold - b.itemSold;
     if (sortOption === "Popularity: High to Low") return b.itemSold - a.itemSold;
     return 0;
+  });
+
+  const filteredProducts = sortedProducts.filter(product => {
+    const inPriceRange = product.price >= priceRange[0] && product.price <= priceRange[1];
+    const inStockMatch =
+      (showInStock && product.stock > 0) ||
+      (showOutOfStock && product.stock === 0);
+    return inPriceRange && inStockMatch;
   });
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
@@ -73,13 +92,62 @@ export default function HomePage() {
         </Box>
 
         <Box display="flex" justifyContent="flex-end" mb={3}>
+          {/* Filter Button */}
+          <Button
+            onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+            startIcon={<FilterAltIcon />}
+            variant="contained"
+            sx={{ backgroundColor: "#1f1c66", color: "white", mr: 2 }}
+          >
+            Filter
+          </Button>
+          <Menu
+            anchorEl={filterAnchorEl}
+            open={Boolean(filterAnchorEl)}
+            onClose={() => setFilterAnchorEl(null)}
+          >
+            <MenuList sx={{ width: 250, px: 2, py: 1 }}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Price Range (${priceRange[0]} - ${priceRange[1]})
+              </Typography>
+              <Slider
+                value={priceRange}
+                onChange={(e, newValue) => setPriceRange(newValue)}
+                valueLabelDisplay="auto"
+                min={0}
+                max={1000}
+                step={10}
+                sx={{ mb: 2 }}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showInStock}
+                    onChange={(e) => setShowInStock(e.target.checked)}
+                  />
+                }
+                label="In Stock"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showOutOfStock}
+                    onChange={(e) => setShowOutOfStock(e.target.checked)}
+                  />
+                }
+                label="Out of Stock"
+              />
+            </MenuList>
+          </Menu>
+
+          {/* Sort Button */}
           <Button
             onClick={handleClick}
             startIcon={<SortIcon />}
             variant="contained"
             sx={{ backgroundColor: "#1f1c66", color: "white" }}
           >
-            {sortOption ? ` ${sortOption}` : "Sort"}
+            {sortOption ? `${sortOption}` : "Sort"}
           </Button>
           <Menu anchorEl={anchorEl} open={open} onClose={() => handleClose(null)}>
             <MenuItem onClick={() => handleClose("Price: Low to High")}>Price: Low to High</MenuItem>
@@ -90,8 +158,8 @@ export default function HomePage() {
         </Box>
 
         <Grid container spacing={4}>
-          {sortedProducts.length > 0 ? (
-            sortedProducts.map((product) => (
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
                 <Card
                   sx={{
@@ -104,7 +172,6 @@ export default function HomePage() {
                     justifyContent: "space-between",
                   }}
                 >
-                  {/* Favorite Icon Top Right */}
                   <IconButton
                     onClick={() =>
                       setFavorites((prev) => ({
