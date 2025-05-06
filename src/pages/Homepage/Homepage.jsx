@@ -32,6 +32,7 @@ export default function HomePage() {
   const [sortOption, setSortOption] = useState("SORT");
   const [cartClicked, setCartClicked] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
+  const [loading, setLoading] = useState(true);
   const open = Boolean(anchorEl);
   const { addToCart } = useCartContext();
 
@@ -42,9 +43,16 @@ export default function HomePage() {
   const [showOutOfStock, setShowOutOfStock] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/products")
-      .then((response) => setProducts(response.data))
-      .catch((error) => console.error("API Error:", error));
+    setLoading(true);
+    axios.get("http://localhost:8080/api/products/published")
+      .then((response) => {
+        setProducts(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("API Error:", error);
+        setLoading(false);
+      });
   }, []);
 
   const sortedProducts = [...products].sort((a, b) => {
@@ -158,7 +166,14 @@ export default function HomePage() {
         </Box>
 
         <Grid container spacing={4}>
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+            <Grid item xs={12} textAlign="center">
+              <CircularProgress />
+              <Typography variant="h6" mt={2}>
+                Products loading.
+              </Typography>
+            </Grid>
+          ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
                 <Card
@@ -203,7 +218,7 @@ export default function HomePage() {
                         {product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {product.description.length > 80
+                        {product.description && product.description.length > 80
                           ? product.description.substring(0, 80) + "..."
                           : product.description}
                       </Typography>
@@ -226,7 +241,7 @@ export default function HomePage() {
                         }}
                       >
                         {(() => {
-                          const [dollars, cents] = product.price.toFixed(2).split(".");
+                          const [dollars, cents] = (product.price || 0).toFixed(2).split(".");
                           return (
                             <>
                               <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
@@ -272,9 +287,8 @@ export default function HomePage() {
             ))
           ) : (
             <Grid item xs={12} textAlign="center">
-              <CircularProgress />
-              <Typography variant="h6" mt={2}>
-                Products loading.
+              <Typography variant="h6">
+                No products available at this time.
               </Typography>
             </Grid>
           )}

@@ -59,7 +59,11 @@ export default function CategoryPage() {
     axios
       .get(`http://localhost:8080/api/products/by-category/${categoryId}`)
       .then((response) => {
-        setProducts(response.data.content || []);
+        // Filter out products that aren't published
+        const publishedProducts = response.data.content.filter(
+          product => product.published === true && product.price !== null
+        );
+        setProducts(publishedProducts || []);
         setLoading(false);
       })
       .catch((error) => {
@@ -69,10 +73,10 @@ export default function CategoryPage() {
   }, [categoryId]);
 
   const sortedProducts = [...products].sort((a, b) => {
-    if (sortOption === "Price: Low to High") return a.price - b.price;
-    if (sortOption === "Price: High to Low") return b.price - a.price;
-    if (sortOption === "Rating: Low to High") return a.rating - b.rating;
-    if (sortOption === "Rating: High to Low") return b.rating - a.rating;
+    if (sortOption === "Price: Low to High") return (a.price || 0) - (b.price || 0);
+    if (sortOption === "Price: High to Low") return (b.price || 0) - (a.price || 0);
+    if (sortOption === "Rating: Low to High") return (a.rating || 0) - (b.rating || 0);
+    if (sortOption === "Rating: High to Low") return (b.rating || 0) - (a.rating || 0);
     return 0;
   });
 
@@ -184,9 +188,9 @@ export default function CategoryPage() {
                         {product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {product.description.length > 80
+                        {product.description && product.description.length > 80
                           ? product.description.substring(0, 80) + "..."
-                          : product.description}
+                          : product.description || ""}
                       </Typography>
                       <Typography
                         variant="body2"
@@ -207,7 +211,9 @@ export default function CategoryPage() {
                         }}
                       >
                         {(() => {
-                          const [dollars, cents] = product.price.toFixed(2).split(".");
+                          // Add null check for price
+                          const price = product.price || 0;
+                          const [dollars, cents] = price.toFixed(2).split(".");
                           return (
                             <>
                               <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>

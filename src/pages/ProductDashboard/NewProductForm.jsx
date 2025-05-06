@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, TextField, Button, Typography, Alert, Paper } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -8,33 +8,111 @@ const NewProductForm = () => {
     name: "",
     model: "",
     description: "",
-    price: "",
     cost: "",
     serialNumber: "",
     quantity: "",
     warranty_status: "",
     distributor: "",
     image_url: "",
-    // Assuming category is an object with only categoryId for selection.
-    category: { categoryId: "" }
+    categoryId: ""
   });
+
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // For nested object category, we handle separately.
-    if (name === "categoryId") {
-      setProduct({ ...product, category: { categoryId: value } });
-    } else {
-      setProduct({ ...product, [name]: value });
-    }
+    setProduct({ ...product, [name]: value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("http://localhost:8080/api/product-managers/products", product)
-      .then(() => navigate("/productdashboard"))
-      .catch(err => console.error("Error creating product:", err));
+    setError("");
+
+    // Create form data object
+    const formData = new FormData();
+
+    // Add product fields to form data
+    formData.append("name", product.name);
+    formData.append("model", product.model);
+    formData.append("description", product.description);
+    formData.append("cost", product.cost ? product.cost : "");
+    formData.append("serialNumber", product.serialNumber);
+    formData.append("quantity", product.quantity ? product.quantity : "");
+    formData.append("warranty_status", product.warranty_status ? product.warranty_status : "");
+    formData.append("distributor", product.distributor);
+    formData.append("image_url", product.image_url);
+
+    const categoryJson = JSON.stringify({
+      categoryId: parseInt(product.categoryId)
+    });
+    formData.append("category", new Blob([categoryJson], { type: 'application/json' }));
+
+    fetch("http://localhost:8080/api/product-managers/products", {
+      method: "POST",
+      body: JSON.stringify({
+        name: product.name,
+        model: product.model,
+        description: product.description,
+        cost: product.cost ? parseFloat(product.cost) : null,
+        serialNumber: product.serialNumber,
+        quantity: product.quantity ? parseInt(product.quantity) : null,
+        warranty_status: product.warranty_status ? parseInt(product.warranty_status) : null,
+        distributor: product.distributor,
+        image_url: product.image_url,
+        category: {
+          categoryId: product.categoryId ? parseInt(product.categoryId) : null
+        }
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Success:", data);
+        alert("Product created successfully! The sales manager will set its price before it appears on the website.");
+        navigate("/productdashboard");
+      })
+      .catch(err => {
+        console.error("Error creating product:", err);
+        setError(`Error creating product: ${err.message}`);
+
+        // If fetch failed, try an alternative approach with axios and x-www-form-urlencoded
+        console.log("Trying alternative approach...");
+
+        const params = new URLSearchParams();
+        params.append("name", product.name);
+        params.append("model", product.model);
+        params.append("description", product.description);
+        params.append("cost", product.cost ? product.cost : "");
+        params.append("serialNumber", product.serialNumber);
+        params.append("quantity", product.quantity ? product.quantity : "");
+        params.append("warranty_status", product.warranty_status ? product.warranty_status : "");
+        params.append("distributor", product.distributor);
+        params.append("image_url", product.image_url);
+        params.append("category.categoryId", product.categoryId);
+
+        axios.post("http://localhost:8080/api/product-managers/products", params, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
+          .then(response => {
+            console.log("Success with alternative approach:", response);
+            alert("Product created successfully! The sales manager will set its price before it appears on the website.");
+            navigate("/productdashboard");
+          })
+          .catch(secondErr => {
+            console.error("Error with alternative approach:", secondErr);
+            setError(`Error creating product: ${err.message}. Alternative approach also failed: ${secondErr.message}`);
+          });
+      });
   };
 
   return (
@@ -42,6 +120,20 @@ const NewProductForm = () => {
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Add New Product
       </Typography>
+
+      <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: "#f8f9fa" }}>
+        <Alert severity="info">
+          New products will not be visible on the website until a sales manager sets their price.
+          As a product manager, you can set the cost, but the sales price will be determined by the sales team.
+        </Alert>
+      </Paper>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       <form onSubmit={handleSubmit}>
         <TextField
           label="Name"
@@ -50,6 +142,7 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Model"
@@ -58,6 +151,7 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Description"
@@ -66,15 +160,8 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
-        />
-        <TextField
-          label="Price"
-          name="price"
-          type="number"
-          value={product.price}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
+          multiline
+          rows={4}
         />
         <TextField
           label="Cost"
@@ -84,6 +171,8 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
+          helperText="Enter the production/acquisition cost of this product"
         />
         <TextField
           label="Serial Number"
@@ -92,6 +181,7 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Quantity"
@@ -101,6 +191,7 @@ const NewProductForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           label="Warranty (months)"
@@ -131,10 +222,11 @@ const NewProductForm = () => {
           label="Category ID"
           name="categoryId"
           type="number"
-          value={product.category.categoryId}
+          value={product.categoryId}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <Button variant="contained" color="primary" type="submit" sx={{ mt: 2 }}>
           Create Product
