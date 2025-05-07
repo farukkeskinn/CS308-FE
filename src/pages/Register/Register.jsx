@@ -104,7 +104,7 @@ export default function RegisterPage() {
         }
 
           setMessage("Registration successful! Redirecting...");
-          setTimeout(() => navigate("/"), 2000);
+          setTimeout(() => navigate("/login"), 2000);
       } else {
         setErrors({ email: data.message || "Registration failed." });
       }

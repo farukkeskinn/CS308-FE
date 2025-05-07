@@ -44,35 +44,35 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (!productId) return;
-  
+
     const fetchAllProductData = async () => {
       setLoading(true);
-  
+
       try {
         // 1️⃣ Get the core product (used for addToCart)
         const productRes = await axios.get(`http://localhost:8080/api/products/${productId}`);
         setProduct(productRes.data);
         console.log("📸 product.imageUrl =>", productRes.data.image_url);
-  
+
         // 2️⃣ Fetch details (optional)
         await axios.get(`http://localhost:8080/api/products/${productId}/details`);
-  
+
         // 3️⃣ Then fetch recommended products
         const recommendedRes = await axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
         if (recommendedRes.data.content && Array.isArray(recommendedRes.data.content)) {
           setRecommendedProducts(recommendedRes.data.content);
         }
-  
+
       } catch (error) {
         console.error("Product/recommendation fetch error:", error);
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchAllProductData();
   }, [productId]);
-  
+
 
   if (loading) {
     return <Typography align="center" mt={5}>Loading product details...</Typography>;
@@ -98,11 +98,11 @@ export default function ProductPage() {
         <Typography variant="body2" color="textSecondary">
           {productId}
         </Typography>
-  
+
         <Box mt={1} display="flex" alignItems="center" gap={2}>
           <Typography fontWeight="bold">⭐ {averageRating}</Typography>
         </Box>
-  
+
         <Grid container spacing={4} mt={3}>
           <Grid item xs={12} md={5}>
             <img
@@ -168,18 +168,18 @@ export default function ProductPage() {
                       setCartClicked(true);
                       setTimeout(() => setCartClicked(false), 300);
                     }}
-                    
+
                     sx={{
                       backgroundColor: product.quantity === 0
                         ? "#ccc"
                         : cartClicked
-                        ? "#2ecc71"
-                        : "#ffffff",
+                          ? "#2ecc71"
+                          : "#ffffff",
                       color: product.quantity === 0
                         ? "#666"
                         : cartClicked
-                        ? "white"
-                        : "#1f1c66",
+                          ? "white"
+                          : "#1f1c66",
                       borderColor: "#1f1c66",
                       height: "45px",
                       fontWeight: "bold",
@@ -191,8 +191,8 @@ export default function ProductPage() {
                           product.quantity === 0
                             ? "#ccc"
                             : cartClicked
-                            ? "#27ae60"
-                            : "#e1e1ff",
+                              ? "#27ae60"
+                              : "#e1e1ff",
                       },
                     }}
                   >
@@ -225,8 +225,8 @@ export default function ProductPage() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                   ContentProps={{
                     sx: {
-                      backgroundColor: "#d32f2f", 
-                      color: "#fff",              
+                      backgroundColor: "#d32f2f",
+                      color: "#fff",
                       fontWeight: "bold",
                     },
                   }}
@@ -249,7 +249,7 @@ export default function ProductPage() {
             />
           </Grid>
         </Grid>
-  
+
         <Paper
           elevation={3}
           sx={{
@@ -337,7 +337,7 @@ export default function ProductPage() {
             </div>
           </Collapse>
         </Paper>
-  
+
         <Box mt={6} p={3} borderRadius={3} sx={{ backgroundColor: "#1f1c66", color: "white" }}>
           <Typography variant="h6" textAlign="center" mb={3}>
             Recommended Products
@@ -391,14 +391,14 @@ export default function ProductPage() {
           </Grid>
         </Box>
       </Box>
-  
+
       <Box component="footer" className="bg-dark text-white text-center py-3 mt-auto">
         <Typography color="white">© 2025 Neptune. All Rights Reserved.</Typography>
       </Box>
     </Box>
   );
 }
-  
+
 function TableSection({ product }) {
   return (
     <TableContainer component={Paper} elevation={3} sx={{ mt: 3 }}>
@@ -418,7 +418,7 @@ function TableSection({ product }) {
           </TableRow>
           <TableRow>
             <TableCell>Warranty</TableCell>
-            <TableCell>{product.warrantyStatus} Years</TableCell>
+            <TableCell>{product.warranty_status} Years</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Distributor</TableCell>

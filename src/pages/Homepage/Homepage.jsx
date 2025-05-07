@@ -2,47 +2,70 @@
 import { useState, useEffect }   from "react";
 import axios                     from "axios";
 import {
-  Box, Grid, Card, CardActionArea, CardMedia,
-  CardContent, Typography, IconButton, Button,
-  Menu, MenuItem, CircularProgress,   Dialog,
+  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Menu,
+  MenuItem,
+  Button,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardMedia,
+  CardActionArea,
+  Typography,
+  Box,
+  Grid,
+  IconButton,
+  Checkbox,
+  FormControlLabel,
+  MenuList,
+  TextField,
+  Stack,
 } from "@mui/material";
-import SortIcon          from "@mui/icons-material/Sort";
-import FavoriteBorder    from "@mui/icons-material/FavoriteBorder";
-import Favorite          from "@mui/icons-material/Favorite";
-import ShoppingCart      from "@mui/icons-material/ShoppingCart";
+import SortIcon from '@mui/icons-material/Sort';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FavoriteBorder from '@mui/icons-material/FavoriteBorder';
+import Favorite from '@mui/icons-material/Favorite';
+import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import { useNavigate, Link } from "react-router-dom";
 import { useCartContext } from "../../context/CartContext";
 import { useWishlist   }   from "../../context/WishlistContext";
 
 export default function HomePage() {
-  /* ------------------------------------------------------------------ */
-  /*  State                                                             */
-  /* ------------------------------------------------------------------ */
-  const [products,   setProducts ] = useState([]);
-  const [sortOpt,    setSortOpt  ] = useState("SORT");
-  const [cartClick,  setCartClick] = useState({});
-  const [anchorEl,   setAnchorEl ] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [favorites, setFavorites] = useState({});
+  const [sortOption, setSortOption] = useState("SORT");
+  const [cartClicked, setCartClicked] = useState({});
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const open = Boolean(anchorEl);
   const [openDialog, setOpenDialog] = useState(false);
-  const openMenu = Boolean(anchorEl);
-
-  const { addToCart }                       = useCartContext();
+  const { addToCart } = useCartContext();
   const { existsInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
-  /* ------------------------------------------------------------------ */
-  /*  Ürünleri getir                                                    */
-  /* ------------------------------------------------------------------ */
+
+  // Filter States
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [showInStock, setShowInStock] = useState(true);
+  const [showOutOfStock, setShowOutOfStock] = useState(true);
+
   useEffect(() => {
-    axios.get("http://localhost:8080/api/products")
-         .then(res => setProducts(res.data))
-         .catch(err => console.error("API Error:", err));
+    setLoading(true);
+    axios.get("http://localhost:8080/api/products/published")
+      .then((response) => {
+        setProducts(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("API Error:", error);
+        setLoading(false);
+      });
   }, []);
 
-  /* ------------------------------------------------------------------ */
-  /*  Sıralama                                                          */
-  /* ------------------------------------------------------------------ */
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortOpt) {
       case "Price: Low to High":      return a.price    - b.price;
@@ -53,9 +76,41 @@ export default function HomePage() {
     }
   });
 
-  /* ------------------------------------------------------------------ */
-  /*  Render                                                            */
-  /* ------------------------------------------------------------------ */
+  const filteredProducts = sortedProducts.filter(product => {
+    // Parse the min and max values, defaulting to 0 and MAX_SAFE_INTEGER if empty
+    const min = minPrice === "" ? 0 : parseFloat(minPrice);
+    const max = maxPrice === "" ? Number.MAX_SAFE_INTEGER : parseFloat(maxPrice);
+
+    const inPriceRange = product.price >= min && product.price <= max;
+    const inStockMatch =
+      (showInStock && product.stock > 0) ||
+      (showOutOfStock && product.stock === 0);
+    return inPriceRange && inStockMatch;
+  });
+
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = (option) => {
+    if (option) setSortOption(option);
+    setAnchorEl(null);
+  };
+
+  // Handle input changes
+  const handleMinPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMinPrice(value);
+    }
+  };
+
+  const handleMaxPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMaxPrice(value);
+    }
+  };
+
   return (
     <Box display="flex" flexDirection="column" minHeight="100vh">
       {/* ------------------------------- Hero ------------------------- */}
@@ -72,13 +127,82 @@ export default function HomePage() {
 
         {/* --------------------------- Sıralama ----------------------- */}
         <Box display="flex" justifyContent="flex-end" mb={3}>
+          {/* Filter Button */}
+          <Button
+            onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+            startIcon={<FilterAltIcon />}
+            variant="contained"
+            sx={{ backgroundColor: "#1f1c66", color: "white", mr: 2 }}
+          >
+            Filter
+          </Button>
+          <Menu
+            anchorEl={filterAnchorEl}
+            open={Boolean(filterAnchorEl)}
+            onClose={() => setFilterAnchorEl(null)}
+          >
+            <MenuList sx={{ width: 250, px: 2, py: 1 }}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Price Range
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <TextField
+                  label="Min $"
+                  variant="outlined"
+                  size="small"
+                  value={minPrice}
+                  onChange={handleMinPriceChange}
+                  placeholder="0"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+                <Typography variant="body2">to</Typography>
+                <TextField
+                  label="Max $"
+                  variant="outlined"
+                  size="small"
+                  value={maxPrice}
+                  onChange={handleMaxPriceChange}
+                  placeholder="Max"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+              </Stack>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showInStock}
+                    onChange={(e) => setShowInStock(e.target.checked)}
+                  />
+                }
+                label="In Stock"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showOutOfStock}
+                    onChange={(e) => setShowOutOfStock(e.target.checked)}
+                  />
+                }
+                label="Out of Stock"
+              />
+            </MenuList>
+          </Menu>
+
+          {/* Sort Button */}
           <Button
             onClick={e => setAnchorEl(e.currentTarget)}
             startIcon={<SortIcon/>}
             variant="contained"
             sx={{ backgroundColor: "#1f1c66", color: "white" }}
           >
-            {sortOpt}
+            {sortOption ? `${sortOption}` : "Sort"}
           </Button>
           <Menu anchorEl={anchorEl} open={openMenu} onClose={() => setAnchorEl(null)}>
             {["Price: Low to High","Price: High to Low",
@@ -93,14 +217,27 @@ export default function HomePage() {
 
         {/* ------------------------ Ürün Grid’i ----------------------- */}
         <Grid container spacing={4}>
-          {sortedProducts.length ? (
-            sortedProducts.map(prod => (
-              <Grid item xs={12} sm={6} md={4} key={prod.productId}>
-                <Card sx={{
-                  position: "relative", borderRadius: "10px", boxShadow: 3,
-                  height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between"
-                }}>
-                  {/* ------ Kalp ikonu ------ */}
+          {loading ? (
+            <Grid item xs={12} textAlign="center">
+              <CircularProgress />
+              <Typography variant="h6" mt={2}>
+                Products loading.
+              </Typography>
+            </Grid>
+          ) : filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <Grid item xs={12} sm={6} md={4} key={product.productId}>
+                <Card
+                  sx={{
+                    position: "relative",
+                    borderRadius: "10px",
+                    boxShadow: 3,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <IconButton
                     onClick={() => {
                       const token = localStorage.getItem("jwtToken");
@@ -133,9 +270,9 @@ export default function HomePage() {
                         {prod.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {prod.description.length > 80
-                          ? prod.description.slice(0, 80) + "…"
-                          : prod.description}
+                        {product.description && product.description.length > 80
+                          ? product.description.substring(0, 80) + "..."
+                          : product.description}
                       </Typography>
                       <Typography
                         variant="body2"
@@ -149,11 +286,13 @@ export default function HomePage() {
                         display: "flex", alignItems: "baseline"
                       }}>
                         {(() => {
-                          const [d, c] = prod.price.toFixed(2).split(".");
-                          return <>
-                            <span style={{ fontSize: 24, fontWeight: 700 }}>${d}</span>
-                            <span style={{ fontSize: 14, marginLeft: 2 }}>.{c}</span>
-                          </>;
+                          const [dollars, cents] = (product.price || 0).toFixed(2).split(".");
+                          return (
+                            <>
+                              <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
+                              <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
+                            </>
+                          );
                         })()}
                       </Typography>
                     </CardContent>
@@ -188,8 +327,9 @@ export default function HomePage() {
             ))
           ) : (
             <Grid item xs={12} textAlign="center">
-              <CircularProgress/>
-              <Typography variant="h6" mt={2}>Products loading.</Typography>
+              <Typography variant="h6">
+                No products available at this time.
+              </Typography>
             </Grid>
           )}
         </Grid>

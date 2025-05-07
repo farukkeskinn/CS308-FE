@@ -25,6 +25,8 @@ import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
 import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
 import WishlistPage from "./pages/WishlistPage/WishlistPage";
 import { WishlistProvider } from "./context/WishlistContext";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
+
 
 
 function App() {

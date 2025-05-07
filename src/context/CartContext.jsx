@@ -51,32 +51,34 @@ export const CartProvider = ({ children }) => {
 
       if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
         const formattedCart = result.shoppingCartItems.map(item => {
+          // Add null checks for all nested properties
+          const product = item.product || {};
+          const category = product.category || {};
+
           const formattedItem = {
-            product: item.product,
-            productId: item.product.productId,
-            name: item.product.name,
-            model: item.product.model,
-            description: item.product.description,
-            distributor: item.product.distributor,
-            categoryName: item.product.category.categoryName,
-            categoryId: item.product.category.categoryId,
-            itemSold: item.product.itemSold,
-            price: item.product.price,
-            cost: item.product.cost,
-            stock: item.product.stock,
-            image_url: item.product.image_url,
-            serialNumber: item.product.serialNumber,
-            warrantyStatus: item.product.warrantyStatus,
-
-
-            quantity: item.quantity,
-            shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
+            product: product,
+            productId: product.productId || "",
+            name: product.name || "",
+            model: product.model || "",
+            description: product.description || "",
+            distributor: product.distributor || "",
+            // Add null checks for category
+            categoryName: category.categoryName || "Uncategorized",
+            categoryId: category.categoryId || 0,
+            itemSold: product.itemSold || 0,
+            price: product.price || 0,
+            cost: product.cost || 0,
+            stock: product.stock || 0,
+            image_url: product.image_url || "",
+            serialNumber: product.serialNumber || "",
+            warrantyStatus: product.warrantyStatus || 0,
+            quantity: item.quantity || 1,
+            shoppingCartItemId: item.shoppingCartItemId || "",
           };
-          console.log("🛒 Formatted Cart Item:", formattedItem); // Log each item
+          console.log("🛒 Formatted Cart Item:", formattedItem);
 
           return formattedItem;
         });
-
 
         setCartItems(formattedCart);
         localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
@@ -98,8 +100,18 @@ export const CartProvider = ({ children }) => {
       const index = updatedCart.findIndex((item) => item.productId === product.productId);
 
       if (index > -1) {
+        // 🔥 Check if adding would exceed stock
+        if (updatedCart[index].quantity + quantity > product.stock) {
+          alert("Cannot add more than available stock");
+          return; // 🔥 stop here
+        }
         updatedCart[index].quantity += quantity;
       } else {
+        // 🔥 Check if quantity itself exceeds stock
+        if (quantity > product.stock) {
+          alert("Cannot add more than available stock");
+          return; // 🔥 stop here
+        }
         updatedCart.push({ ...product, quantity });
       }
 
@@ -135,6 +147,7 @@ export const CartProvider = ({ children }) => {
       }
     }
   };
+
 
 
   return (

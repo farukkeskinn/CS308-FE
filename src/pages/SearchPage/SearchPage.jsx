@@ -14,8 +14,14 @@ import {
   Box,
   Grid,
   IconButton,
+  MenuList,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Stack,
 } from "@mui/material";
 import SortIcon from "@mui/icons-material/Sort";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
@@ -36,6 +42,14 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCartContext();
   const { existsInWishlist, toggleWishlist } = useWishlist();
+
+  // Filter States
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [showInStock, setShowInStock] = useState(true);
+  const [showOutOfStock, setShowOutOfStock] = useState(true);
+
   useEffect(() => {
     if (!query) {
       setProducts([]);
@@ -47,10 +61,13 @@ export default function SearchPage() {
     axios
       .get("http://localhost:8080/api/products")
       .then((res) => {
+        // Filter for products that match search AND are published with prices set
         const filtered = res.data.filter(
           (product) =>
-            product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.description.toLowerCase().includes(query.toLowerCase())
+            (product.name?.toLowerCase().includes(query.toLowerCase()) ||
+              product.description?.toLowerCase().includes(query.toLowerCase())) &&
+            product.published === true &&
+            product.price !== null
         );
         setProducts(filtered);
         setLoading(false);
@@ -58,12 +75,43 @@ export default function SearchPage() {
       .catch(() => setLoading(false));
   }, [query]);
 
+  // Handle input changes for price filters
+  const handleMinPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMinPrice(value);
+    }
+  };
+
+  const handleMaxPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMaxPrice(value);
+    }
+  };
+
+  // First sort the products
   const sortedProducts = [...products].sort((a, b) => {
-    if (sortOption === "Price: Low to High") return a.price - b.price;
-    if (sortOption === "Price: High to Low") return b.price - a.price;
-    if (sortOption === "Rating: Low to High") return a.rating - b.rating;
-    if (sortOption === "Rating: High to Low") return b.rating - a.rating;
+    if (sortOption === "Price: Low to High") return (a.price || 0) - (b.price || 0);
+    if (sortOption === "Price: High to Low") return (b.price || 0) - (a.price || 0);
+    if (sortOption === "Rating: Low to High") return (a.rating || 0) - (b.rating || 0);
+    if (sortOption === "Rating: High to Low") return (b.rating || 0) - (a.rating || 0);
     return 0;
+  });
+
+  // Then apply filters
+  const filteredProducts = sortedProducts.filter(product => {
+    // Parse the min and max values, defaulting to 0 and MAX_SAFE_INTEGER if empty
+    const min = minPrice === "" ? 0 : parseFloat(minPrice);
+    const max = maxPrice === "" ? Number.MAX_SAFE_INTEGER : parseFloat(maxPrice);
+
+    const inPriceRange = product.price >= min && product.price <= max;
+    const inStockMatch =
+      (showInStock && product.stock > 0) ||
+      (showOutOfStock && product.stock === 0);
+    return inPriceRange && inStockMatch;
   });
 
   const handleClick = (e) => setAnchorEl(e.currentTarget);
@@ -97,6 +145,75 @@ export default function SearchPage() {
         </Box>
 
         <Box display="flex" justifyContent="flex-end" mb={3}>
+          {/* Filter Button */}
+          <Button
+            onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+            startIcon={<FilterAltIcon />}
+            variant="contained"
+            sx={{ backgroundColor: "#1f1c66", color: "white", mr: 2 }}
+          >
+            Filter
+          </Button>
+          <Menu
+            anchorEl={filterAnchorEl}
+            open={Boolean(filterAnchorEl)}
+            onClose={() => setFilterAnchorEl(null)}
+          >
+            <MenuList sx={{ width: 250, px: 2, py: 1 }}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                Price Range
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <TextField
+                  label="Min $"
+                  variant="outlined"
+                  size="small"
+                  value={minPrice}
+                  onChange={handleMinPriceChange}
+                  placeholder="0"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+                <Typography variant="body2">to</Typography>
+                <TextField
+                  label="Max $"
+                  variant="outlined"
+                  size="small"
+                  value={maxPrice}
+                  onChange={handleMaxPriceChange}
+                  placeholder="Max"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+              </Stack>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showInStock}
+                    onChange={(e) => setShowInStock(e.target.checked)}
+                  />
+                }
+                label="In Stock"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showOutOfStock}
+                    onChange={(e) => setShowOutOfStock(e.target.checked)}
+                  />
+                }
+                label="Out of Stock"
+              />
+            </MenuList>
+          </Menu>
+
+          {/* Sort Button */}
           <Button
             onClick={handleClick}
             startIcon={<SortIcon />}
@@ -121,8 +238,8 @@ export default function SearchPage() {
                 Loading products...
               </Typography>
             </Grid>
-          ) : sortedProducts.length > 0 ? (
-            sortedProducts.map((product) => (
+          ) : filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
                 <Card
                   sx={{
@@ -162,9 +279,9 @@ export default function SearchPage() {
                         {product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {product.description.length > 80
+                        {product.description && product.description.length > 80
                           ? product.description.substring(0, 80) + "..."
-                          : product.description}
+                          : product.description || ""}
                       </Typography>
                       <Typography
                         variant="body2"
@@ -185,7 +302,9 @@ export default function SearchPage() {
                         }}
                       >
                         {(() => {
-                          const [dollars, cents] = product.price.toFixed(2).split(".");
+                          // Add null check for price
+                          const price = product.price || 0;
+                          const [dollars, cents] = price.toFixed(2).split(".");
                           return (
                             <>
                               <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
