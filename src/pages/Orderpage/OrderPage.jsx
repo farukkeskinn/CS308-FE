@@ -11,6 +11,8 @@ export default function OrderHistory() {
   const [comment, setComment] = useState("");
   const [selectedOrderItems, setSelectedOrderItems] = useState([]);
   const [openItemsDialog, setOpenItemsDialog] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // { type: 'cancel' | 'refund', orderId }
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -55,7 +57,7 @@ export default function OrderHistory() {
     if (openItemsDialog && selectedOrderItems.length > 0 && !selectedOrderItems[0].image) {
       enrichItemsWithImages();
     }
-  }, [openItemsDialog]);
+  }, [openItemsDialog, selectedOrderItems]);
 
   const handleSubmitReview = async () => {
     try {
@@ -92,6 +94,53 @@ export default function OrderHistory() {
     });
   };
 
+  const handleConfirmAction = async () => {
+    try {
+      const jwtToken = localStorage.getItem("jwtToken");
+  
+      const endpoint =
+        confirmAction?.type === "cancel"
+          ? `http://localhost:8080/api/orders/${confirmAction.orderId}/cancel`
+          : `http://localhost:8080/api/orders/${confirmAction.orderId}/refund`;
+  
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+  
+      if (!response.ok) throw new Error("Request failed");
+  
+      alert(
+        confirmAction?.type === "cancel"
+          ? "Order successfully cancelled."
+          : "Refund requested successfully."
+      );
+  
+      // Optionally refetch orders to refresh the UI
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.orderId === confirmAction.orderId
+            ? {
+                ...order,
+                orderStatus:
+                  confirmAction.type === "cancel"
+                    ? "CANCELLED"
+                    : order.orderStatus,
+              }
+            : order
+        )
+      );
+    } catch (error) {
+      console.error("Action failed:", error);
+      alert("Something went wrong. Try again later.");
+    } finally {
+      setConfirmDialogOpen(false);
+    }
+  };
+  
+  
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", py: 5, px: { xs: 2, md: 10 } }}>
       <Paper elevation={3} sx={{ backgroundColor: "white", p: 4, textAlign: "center", mb: 4 }}>
@@ -123,6 +172,7 @@ export default function OrderHistory() {
                 <th scope="col">Payment</th>
                 <th scope="col">Invoice</th>
                 <th scope="col">Items</th>
+                <th scope="col">Cancel/Refund</th>
               </tr>
             </thead>
             <tbody>
@@ -162,6 +212,40 @@ export default function OrderHistory() {
                     >
                       View Items ({order.orderItems.length})
                     </Button>
+                  </td>
+                  <td>
+                    {order.orderStatus === "PROCESSING" ? (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        sx={{ minWidth: 140, textTransform: "none" }}
+                        onClick={() => {
+                          setConfirmAction({ type: "cancel", orderId: order.orderId });
+                          setConfirmDialogOpen(true);
+                        }}
+                      >
+                        CANCEL
+                      </Button>
+                    ) : order.orderStatus === "DELIVERED" &&
+                      new Date() - new Date(order.orderDate) <= 30 * 24 * 60 * 60 * 1000 ? (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        sx={{ minWidth: 140, textTransform: "none" }}
+                        onClick={() => {
+                          setConfirmAction({ type: "refund", orderId: order.orderId });
+                          setConfirmDialogOpen(true);
+                        }}
+                      >
+                        REQUEST REFUND
+                      </Button>
+                    ) : (
+                      <Button size="small" variant="outlined" disabled>
+                        Not Available
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -235,6 +319,29 @@ export default function OrderHistory() {
           <Button onClick={() => setOpenReviewDialog(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleSubmitReview} disabled={rating === 0}>
             Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirm {confirmAction?.type === 'cancel' ? 'Cancellation' : 'Refund'}</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to {confirmAction?.type} this order?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>No</Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              alert(`${confirmAction?.type === 'cancel' ? 'Order cancelled' : 'Refund requested'}`);
+              handleConfirmAction();
+              setConfirmDialogOpen(false);
+            }}
+          >
+            Yes
           </Button>
         </DialogActions>
       </Dialog>
