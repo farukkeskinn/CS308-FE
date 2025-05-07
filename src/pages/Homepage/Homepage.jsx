@@ -14,10 +14,11 @@ import {
   Box,
   Grid,
   IconButton,
-  Slider,
   Checkbox,
   FormControlLabel,
   MenuList,
+  TextField,
+  Stack,
 } from "@mui/material";
 import SortIcon from '@mui/icons-material/Sort';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
@@ -38,7 +39,8 @@ export default function HomePage() {
 
   // Filter States
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [showInStock, setShowInStock] = useState(true);
   const [showOutOfStock, setShowOutOfStock] = useState(true);
 
@@ -64,7 +66,11 @@ export default function HomePage() {
   });
 
   const filteredProducts = sortedProducts.filter(product => {
-    const inPriceRange = product.price >= priceRange[0] && product.price <= priceRange[1];
+    // Parse the min and max values, defaulting to 0 and MAX_SAFE_INTEGER if empty
+    const min = minPrice === "" ? 0 : parseFloat(minPrice);
+    const max = maxPrice === "" ? Number.MAX_SAFE_INTEGER : parseFloat(maxPrice);
+
+    const inPriceRange = product.price >= min && product.price <= max;
     const inStockMatch =
       (showInStock && product.stock > 0) ||
       (showOutOfStock && product.stock === 0);
@@ -75,6 +81,23 @@ export default function HomePage() {
   const handleClose = (option) => {
     if (option) setSortOption(option);
     setAnchorEl(null);
+  };
+
+  // Handle input changes
+  const handleMinPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMinPrice(value);
+    }
+  };
+
+  const handleMaxPriceChange = (event) => {
+    const value = event.target.value;
+    // Allow empty string or numbers only
+    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
+      setMaxPrice(value);
+    }
   };
 
   return (
@@ -116,17 +139,37 @@ export default function HomePage() {
           >
             <MenuList sx={{ width: 250, px: 2, py: 1 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Price Range (${priceRange[0]} - ${priceRange[1]})
+                Price Range
               </Typography>
-              <Slider
-                value={priceRange}
-                onChange={(e, newValue) => setPriceRange(newValue)}
-                valueLabelDisplay="auto"
-                min={0}
-                max={1000}
-                step={10}
-                sx={{ mb: 2 }}
-              />
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <TextField
+                  label="Min $"
+                  variant="outlined"
+                  size="small"
+                  value={minPrice}
+                  onChange={handleMinPriceChange}
+                  placeholder="0"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+                <Typography variant="body2">to</Typography>
+                <TextField
+                  label="Max $"
+                  variant="outlined"
+                  size="small"
+                  value={maxPrice}
+                  onChange={handleMaxPriceChange}
+                  placeholder="Max"
+                  sx={{ width: '45%' }}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+              </Stack>
               <FormControlLabel
                 control={
                   <Checkbox
