@@ -7,6 +7,9 @@ import SearchBar from "./SearchBar";
 import { Box } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import { useCartContext } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";  
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 
 const Navbar = () => {
@@ -17,6 +20,11 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const { cartItems, setCartItems } = useCartContext();
+    // ➤ useWishlist içinden sayacı alalım
+  const { items: favItems, loading: favLoading } = useWishlist();
+  const favCount = favLoading ? 0 : favItems.length;
+
+  const { items } = useWishlist();
 
   const location = useLocation();
 
@@ -139,7 +147,7 @@ const Navbar = () => {
           </Box>
 
           <div className="d-flex align-items-center gap-2">
-            {token ? (
+            {token ? (               
               <div
                 className="position-relative d-flex justify-content-center align-items-center"
                 onMouseEnter={() => setProfileMenuOpen(true)}
@@ -202,6 +210,27 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
+
+            {/* Wishlist kalp ikonu – müşteriler ve giriş yapmamış kullanıcılar için göster */}
+            {(!token || isCustomer) && (
+              <Link to="/wishlist" className="text-white fs-5" style={{ marginRight: 5, marginLeft: 5 }}>
+                <Badge
+                  badgeContent={favCount}
+                  color="error"
+                  overlap="rectangular"
+                  anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                  sx={{ "& .MuiBadge-badge": { fontSize: "0.75rem", height: 18, minWidth: 18 } }}
+                >
+                  {favCount > 0 ? (
+                    <FavoriteIcon fontSize="medium" />
+                  ) : (
+                    <FavoriteBorderIcon fontSize="medium" />
+                  )}
+                </Badge>
+              </Link>
+            )}
+
+
 
             {/* Show shopping cart icon only for customers or non-logged in users */}
             {!token || isCustomer ? (

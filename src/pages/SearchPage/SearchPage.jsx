@@ -27,6 +27,8 @@ import Favorite from "@mui/icons-material/Favorite";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import { useCartContext } from "../../context/CartContext";
+import { useWishlist }   from "../../context/WishlistContext"; 
+
 
 export default function SearchPage() {
   const [products, setProducts] = useState([]);
@@ -39,6 +41,7 @@ export default function SearchPage() {
   const query = searchParams.get("search") || "";
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCartContext();
+  const { existsInWishlist, toggleWishlist } = useWishlist();
 
   // Filter States
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
@@ -250,21 +253,17 @@ export default function SearchPage() {
                   }}
                 >
                   <IconButton
-                    onClick={() =>
-                      setFavorites((prev) => ({
-                        ...prev,
-                        [product.productId]: !prev[product.productId],
-                      }))
-                    }
+                    onClick={()=>{
+                      const token = localStorage.getItem("jwtToken");
+                      if (!token) { window.location.href="/login"; return; }
+                      toggleWishlist(product);
+                    }}
                     sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      color: favorites[product.productId] ? "error.main" : "grey.500",
-                      zIndex: 2,
+                      position:"absolute", top:8, right:8, zIndex:2,
+                      color: existsInWishlist(product.productId) ? "error.main" : "grey.500",
                     }}
                   >
-                    {favorites[product.productId] ? <Favorite /> : <FavoriteBorder />}
+                    {existsInWishlist(product.productId) ? <Favorite/> : <FavoriteBorder/>}
                   </IconButton>
 
                   <CardActionArea component={Link} to={`/product/${product.productId}`}>

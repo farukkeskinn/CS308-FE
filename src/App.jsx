@@ -22,8 +22,11 @@ import ProductDashboard from './pages/ProductDashboard/ProductDashboard';
 import NewProductForm from "./pages/ProductDashboard/NewProductForm";
 import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
 import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
-import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";
+import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
+import WishlistPage from "./pages/WishlistPage/WishlistPage";
+import { WishlistProvider } from "./context/WishlistContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+
 
 
 function App() {
@@ -50,40 +53,42 @@ function App() {
   
 
   return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar />
-                <Routes>
-                  <Route path="/" element={<Homepage />} />
-                  <Route path="/product/:productId" element={<Productpage />} />
-                  <Route path="/category/:categoryId" element={<CategoryPage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/cart" element={<ShoppingCart />} />
-                  <Route path="/orderpage" element={<OrderHistory />} />
-                  <Route path="/orderpage/:orderId" element={<OrderHistory />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/thank-you" element={<ThankYouPage />} />
-                  <Route path="/salesdashboard" element={<SalesDashboard />} />
-                  <Route path="/productdashboard" element={<ProductDashboard />} />
-                  <Route path="/productdashboard/new-product" element={<NewProductForm />} />
-                  <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
-                  <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
-                  <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                </Routes>
-              </>
-            }
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </Router>
-    </CartProvider>
+    <WishlistProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar />
+                  <Routes>
+                    <Route path="/" element={<Homepage />} />
+                    <Route path="/product/:productId" element={<Productpage />} />
+                    <Route path="/category/:categoryId" element={<CategoryPage />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/cart" element={<ShoppingCart />} />
+                    <Route path="/orderpage" element={<OrderHistory />} />
+                    <Route path="/orderpage/:orderId" element={<OrderHistory />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/thank-you" element={<ThankYouPage />} />
+                    <Route path="/salesdashboard" element={<SalesDashboard />} />
+                    <Route path="/productdashboard" element={<ProductDashboard />} />
+                    <Route path="/productdashboard/new-product" element={<NewProductForm />} />
+                    <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
+                    <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
+                    <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                  </Routes>
+                </>
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </Router>
+      </CartProvider>
+    </WishlistProvider>
   );
 }
 

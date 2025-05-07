@@ -25,6 +25,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
 import { useCartContext } from "../../context/CartContext";
+import { useWishlist }       from "../../context/WishlistContext"; 
 
 export default function ProductPage() {
   const { productId } = useParams();
@@ -38,8 +39,8 @@ export default function ProductPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [favoriteSnackbarOpen, setFavoriteSnackbarOpen] = useState(false);
   const [favoriteMessage, setFavoriteMessage] = useState("");
-
-
+  const { existsInWishlist, toggleWishlist } = useWishlist();    
+  const [snack, setSnack] = useState({open:false,msg:"",color:"#2e7d32"});
 
   useEffect(() => {
     if (!productId) return;
@@ -80,6 +81,8 @@ export default function ProductPage() {
   if (!product) {
     return <Typography align="center" mt={5}>Product not found.</Typography>;
   }
+
+  const fav = existsInWishlist(product.productId);     
 
   const totalReviews = product.reviews ? product.reviews.length : 0;
   const averageRating = totalReviews > 0
@@ -195,39 +198,23 @@ export default function ProductPage() {
                   >
                     {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
-                  <Button
-                    variant="contained"
-                    color={isFavorited ? "success" : "error"}
-                    fullWidth
-                    startIcon={
-                      isFavorited ? (
-                        <Favorite sx={{ transition: "transform 0.3s ease", transform: "scale(1.1)" }} />
-                      ) : (
-                        <FavoriteBorder sx={{ transition: "transform 0.3s ease", transform: "scale(1)" }} />
-                      )
-                    }
-                    onClick={() => {
-                      const newFavoriteStatus = !isFavorited;
-                      setIsFavorited(newFavoriteStatus);
-                      setFavoriteMessage(newFavoriteStatus ? "Added to Favorites!" : "Removed from Favorites!");
-                      setFavoriteSnackbarOpen(true);
-                      setTimeout(() => setFavoriteSnackbarOpen(false), 3000);
-                    }}
+                  <Button fullWidth variant="contained"
+                      startIcon={fav ? <Favorite/> : <FavoriteBorder/>}
+                      color={fav ? "success" : "error"}
+                      onClick={async ()=>{
+                        const token=localStorage.getItem("jwtToken");
+                        if(!token){ window.location.href="/login"; return; }
 
-                    sx={{
-                      height: "45px",
-                      borderRadius: "10px",
-                      fontWeight: "bold",
-                      fontSize: "14px",
-                      transition: "all 0.3s ease",
-                      backgroundColor: isFavorited ? "#2e7d32" : "#d32f2f",
-                      "&:hover": {
-                        backgroundColor: isFavorited ? "#1b5e20" : "#b71c1c",
-                        transform: "scale(1.03)",
-                      },
-                    }}
-                  >
-                    {isFavorited ? "Added to Favorites" : "Add to Favorites"}
+                        await toggleWishlist(product);
+                        setSnack({open:true,
+                                  msg: fav? "Removed from favourites" : "Added to favourites",
+                                  color: fav? "#d32f2f" : "#2e7d32"});
+                      }}
+                      sx={{
+                        backgroundColor: fav? "#2e7d32" : "#d32f2f",
+                        "&:hover":{backgroundColor: fav? "#1b5e20" : "#b71c1c"}
+                      }}>
+                    {fav ? "Remove from favourites" : "Add to favourites"}
                   </Button>
                 </Box>
                 <Snackbar
