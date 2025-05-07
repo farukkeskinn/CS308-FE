@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
-import { useState, useEffect }   from "react";
-import axios                     from "axios";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogTitle,
@@ -31,7 +31,7 @@ import Favorite from '@mui/icons-material/Favorite';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import { useNavigate, Link } from "react-router-dom";
 import { useCartContext } from "../../context/CartContext";
-import { useWishlist   }   from "../../context/WishlistContext";
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -67,12 +67,12 @@ export default function HomePage() {
   }, []);
 
   const sortedProducts = [...products].sort((a, b) => {
-    switch (sortOpt) {
-      case "Price: Low to High":      return a.price    - b.price;
-      case "Price: High to Low":      return b.price    - a.price;
+    switch (sortOption) {
+      case "Price: Low to High": return a.price - b.price;
+      case "Price: High to Low": return b.price - a.price;
       case "Popularity: Low to High": return a.itemSold - b.itemSold;
       case "Popularity: High to Low": return b.itemSold - a.itemSold;
-      default:                        return 0;
+      default: return 0;
     }
   });
 
@@ -198,17 +198,17 @@ export default function HomePage() {
           {/* Sort Button */}
           <Button
             onClick={e => setAnchorEl(e.currentTarget)}
-            startIcon={<SortIcon/>}
+            startIcon={<SortIcon />}
             variant="contained"
             sx={{ backgroundColor: "#1f1c66", color: "white" }}
           >
             {sortOption ? `${sortOption}` : "Sort"}
           </Button>
-          <Menu anchorEl={anchorEl} open={openMenu} onClose={() => setAnchorEl(null)}>
-            {["Price: Low to High","Price: High to Low",
-              "Popularity: Low to High","Popularity: High to Low"]
+          <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+            {["Price: Low to High", "Price: High to Low",
+              "Popularity: Low to High", "Popularity: High to Low"]
               .map(opt => (
-                <MenuItem key={opt} onClick={() => { setSortOpt(opt); setAnchorEl(null); }}>
+                <MenuItem key={opt} onClick={() => { setSortOption(opt); setAnchorEl(null); }}>
                   {opt}
                 </MenuItem>
               ))}
@@ -245,29 +245,29 @@ export default function HomePage() {
                         setOpenDialog(true);   // 👉 diyalogu aç
                         return;                // toggle çağırma
                       }
-                      toggleWishlist(prod);   
+                      toggleWishlist(product);
                     }}
                     sx={{
                       position: "absolute", top: 8, right: 8,
-                      color: existsInWishlist(prod.productId) ? "error.main" : "grey.500",
+                      color: existsInWishlist(product.productId) ? "error.main" : "grey.500",
                       zIndex: 2,
                     }}
                   >
-                    {existsInWishlist(prod.productId) ? <Favorite/> : <FavoriteBorder/>}
+                    {existsInWishlist(product.productId) ? <Favorite /> : <FavoriteBorder />}
                   </IconButton>
 
                   {/* ------ Ürün görsel / detay linki ------ */}
-                  <CardActionArea component={Link} to={`/product/${prod.productId}`}>
+                  <CardActionArea component={Link} to={`/product/${product.productId}`}>
                     <CardMedia
                       component="img"
                       height="200"
-                      image={prod.image_url}
-                      alt={prod.name}
+                      image={product.image_url}
+                      alt={product.name}
                       sx={{ objectFit: "contain", p: 2 }}
                     />
                     <CardContent>
                       <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {prod.name}
+                        {product.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {product.description && product.description.length > 80
@@ -277,9 +277,9 @@ export default function HomePage() {
                       <Typography
                         variant="body2"
                         sx={{ mt: 1 }}
-                        color={prod.stock === 0 ? "error" : "text.secondary"}
+                        color={product.stock === 0 ? "error" : "text.secondary"}
                       >
-                        {prod.stock === 0 ? "Out of Stock" : `In Stock: ${prod.stock}`}
+                        {product.stock === 0 ? "Out of Stock" : `In Stock: ${product.stock}`}
                       </Typography>
                       <Typography sx={{
                         color: "#1f1c66", fontWeight: "bold", mt: 1,
@@ -302,25 +302,25 @@ export default function HomePage() {
                   <Button
                     fullWidth
                     variant="contained"
-                    startIcon={<ShoppingCart/>}
-                    disabled={prod.stock === 0}
+                    startIcon={<ShoppingCart />}
+                    disabled={product.stock === 0}
                     onClick={() => {
-                      setCartClick(prev => ({ ...prev, [prod.productId]: true }));
-                      addToCart(prod);
+                      setCartClicked(prev => ({ ...prev, [product.productId]: true }));
+                      addToCart(product);
                       setTimeout(() =>
-                        setCartClick(prev => ({ ...prev, [prod.productId]: false })), 300);
+                        setCartClicked(prev => ({ ...prev, [product.productId]: false })), 300);
                     }}
                     sx={{
                       mt: "auto", borderRadius: "0 0 15px 15px",
-                      backgroundColor: cartClick[prod.productId] ? "#2ecc71" : "#1f1c66",
+                      backgroundColor: cartClicked[product.productId] ? "#2ecc71" : "#1f1c66",
                       color: "white", fontWeight: "bold", fontSize: 14, height: 45,
                       transition: "background-color .3s ease",
                       "&:hover": {
-                        backgroundColor: cartClick[prod.productId] ? "#27ae60" : "#181552",
+                        backgroundColor: cartClicked[product.productId] ? "#27ae60" : "#181552",
                       }
                     }}
                   >
-                    {prod.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                 </Card>
               </Grid>
