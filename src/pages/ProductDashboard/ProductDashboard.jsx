@@ -53,30 +53,46 @@ const ProductDashboard = () => {
       </Typography>
 
       {/* Action Buttons for Product Management */}
-      <Box mb={2}>
+      <Box
+        mb={2}
+        sx={{
+          display: "flex",
+          gap: 2,                // ← 16px gap between every button
+          flexWrap: "wrap"       // ← if you ever need wrapping on small screens
+        }}
+      >
         <Button
           variant="contained"
           color="primary"
           onClick={() => navigate("/productdashboard/new-product")}
-          style={{ marginRight: '1rem' }}
         >
           Add New Product
         </Button>
+
         <Button
           variant="contained"
           color="error"
           onClick={() => navigate("/productdashboard/categories")}
-          style={{ marginRight: '1rem' }}
         >
           Manage Categories
         </Button>
-        {/* NEW: Manage Reviews Button */}
+
+        {/* this was “secondary” before, but you can pick whichever MUI color you like */}
         <Button
           variant="contained"
           color="secondary"
           onClick={() => navigate("/productdashboard/reviews")}
         >
           Manage Reviews
+        </Button>
+
+        {/* newly added, now in “info” so it stands out in blue-green */}
+        <Button
+          variant="contained"
+          color="info"
+          onClick={() => navigate("/productdashboard/manage-orders")}
+        >
+          Manage Orders
         </Button>
       </Box>
 

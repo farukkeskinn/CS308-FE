@@ -26,6 +26,7 @@ import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagement
 import WishlistPage from "./pages/WishlistPage/WishlistPage";
 import { WishlistProvider } from "./context/WishlistContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import ManageOrders from "./pages/ProductDashboard/ManageOrders";
 
 
 
@@ -79,6 +80,7 @@ function App() {
                     <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
                     <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/productdashboard/manage-orders" element={<ManageOrders />} />
                   </Routes>
                 </>
               }
