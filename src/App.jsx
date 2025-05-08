@@ -24,6 +24,7 @@ import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
 import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
 import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import ManageOrders from "./pages/ProductDashboard/ManageOrders";
 
 
 function App() {
@@ -75,6 +76,7 @@ function App() {
                   <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
                   <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
                   <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/productdashboard/manage-orders" element={<ManageOrders />} />
                 </Routes>
               </>
             }
