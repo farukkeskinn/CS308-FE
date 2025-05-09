@@ -81,6 +81,7 @@ function App() {
                     <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
                     <Route path="/productdashboard/manage-orders" element={<ManageOrders />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                   </Routes>
                 </>
               }
