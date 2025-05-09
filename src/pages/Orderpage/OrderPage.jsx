@@ -13,6 +13,8 @@ export default function OrderHistory() {
   const [openItemsDialog, setOpenItemsDialog] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null); // { type: 'cancel' | 'refund', orderId }
+  const [refundReason, setRefundReason] = useState("Didn't like the product");
+
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -98,40 +100,62 @@ export default function OrderHistory() {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
   
-      const endpoint =
-        confirmAction?.type === "cancel"
-          ? `http://localhost:8080/api/orders/${confirmAction.orderId}/cancel`
-          : `http://localhost:8080/api/orders/${confirmAction.orderId}/refund`;
+      let response;
+      console.log("Confirm action:", confirmAction);
   
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
+      if (confirmAction?.type === "cancel") {
+        // Cancel full order
+        const endpoint = `http://localhost:8080/api/orders/${confirmAction.orderId}/cancel`;
+        console.log("my endpoint", endpoint);
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+      } else if (confirmAction?.type === "refund-item") {
+        // Refund single item
+        console.log("Refunding item:", confirmAction.orderItemId);
+        const endpoint = `http://localhost:8080/api/refunds/request`;
+        console.log("my endpoint", endpoint);
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+          body: JSON.stringify({
+            orderId: confirmAction.orderId,
+            orderItemId: confirmAction.orderItemId,
+            reason: refundReason,
+          }),
+        });
+      } else if (confirmAction?.type === "refund-all") {
+        // Refund full order
+        const endpoint = `http://localhost:8080/api/refunds/request-all/${confirmAction.orderId}?reason=Siparişbeklentilerimikarşılamadı`;
+        console.log("my endpoint", endpoint);
+        console.log("confirmAction", confirmAction);
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+      } else {
+        throw new Error("Unsupported action type");
+      }
   
       if (!response.ok) throw new Error("Request failed");
   
       alert(
         confirmAction?.type === "cancel"
           ? "Order successfully cancelled."
-          : "Refund requested successfully."
+          : confirmAction?.type === "refund-item"
+          ? "Refund request submitted for item."
+          : "Full order refund submitted."
       );
   
-      // Optionally refetch orders to refresh the UI
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.orderId === confirmAction.orderId
-            ? {
-                ...order,
-                orderStatus:
-                  confirmAction.type === "cancel"
-                    ? "CANCELLED"
-                    : order.orderStatus,
-              }
-            : order
-        )
-      );
+      // Optional: update UI state or re-fetch orders
     } catch (error) {
       console.error("Action failed:", error);
       alert("Something went wrong. Try again later.");
@@ -139,6 +163,7 @@ export default function OrderHistory() {
       setConfirmDialogOpen(false);
     }
   };
+  
   
   
   return (
@@ -235,7 +260,7 @@ export default function OrderHistory() {
                         color="error"
                         sx={{ minWidth: 140, textTransform: "none" }}
                         onClick={() => {
-                          setConfirmAction({ type: "refund", orderId: order.orderId });
+                          setConfirmAction({ type: "refund-all", orderId: order.orderId });
                           setConfirmDialogOpen(true);
                         }}
                       >
@@ -257,40 +282,86 @@ export default function OrderHistory() {
       <Dialog open={openItemsDialog} onClose={() => setOpenItemsDialog(false)}>
         <DialogTitle>Order Items</DialogTitle>
         <DialogContent dividers>
-          {selectedOrderItems.map((item, idx) => (
-            <Grid key={idx} container spacing={2} alignItems="center" mb={2}>
-              <Grid item xs={3}>
-                {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.productName}
-                    style={{ maxWidth: "100%", borderRadius: "8px" }}
-                  />
-                )}
+          {selectedOrderItems.map((item, idx) => {
+            const parentOrder = orders.find(order => order.orderItems.some(i => i.orderItemId === item.orderItemId));
+            const orderStatus = parentOrder?.orderStatus;
+            const orderDate = parentOrder?.orderDate;
+            const isRefundEligible =
+              orderStatus === "DELIVERED" &&
+              new Date() - new Date(orderDate) <= 30 * 24 * 60 * 60 * 1000;
+            const isCancelable = orderStatus === "PROCESSING";
+
+            return (
+              <Grid key={idx} container spacing={2} alignItems="center" mb={2}>
+                <Grid item xs={3}>
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.productName}
+                      style={{ maxWidth: "100%", borderRadius: "8px" }}
+                    />
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2">{item.productName}</Typography>
+                  <Typography variant="body2">
+                    Product ID: {item.productId}<br />
+                    Price: ${item.priceAtPurchase.toFixed(2)}<br />
+                    Quantity: {item.quantity}
+                  </Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Box display="flex" flexDirection="column" alignItems="flex-end">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        minWidth: 130,
+                        textTransform: "none",
+                        mb: isRefundEligible ? 1 : 0,
+                      }}
+                      onClick={() => {
+                        setSelectedProductId(item.productId);
+                        setSelectedProductName(item.productName);
+                        setOpenReviewDialog(true);
+                      }}
+                    >
+                      Review
+                    </Button>
+
+                    {isRefundEligible && (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        sx={{
+                          minWidth: 130,
+                          textTransform: "none",
+                        }}
+                        onClick={() => {
+                          const matchingOrderItem = parentOrder?.orderItems.find(
+                            (oi) => oi.productId === item.productId
+                          );
+                          console.log("Matching Order Item:", matchingOrderItem);
+                          
+                          setConfirmAction({
+                            type: "refund-item",
+                            orderId: parentOrder?.orderId,
+                            orderItemId: matchingOrderItem?.productId, // ✅ proper access
+                            reason: refundReason,
+                          });
+                          
+                          setConfirmDialogOpen(true);
+                        }}
+                      >
+                        Refund Item
+                      </Button>
+                    )}
+                  </Box>
+                </Grid>
               </Grid>
-              <Grid item xs={6}>
-                <Typography variant="subtitle2">{item.productName}</Typography>
-                <Typography variant="body2">
-                  Product ID: {item.productId}<br />
-                  Price: ${item.priceAtPurchase.toFixed(2)}<br />
-                  Quantity: {item.quantity}
-                </Typography>
-              </Grid>
-              <Grid item xs={3} textAlign="right">
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => {
-                    setSelectedProductId(item.productId);
-                    setSelectedProductName(item.productName);
-                    setOpenReviewDialog(true);
-                  }}
-                >
-                  Review
-                </Button>
-              </Grid>
-            </Grid>
-          ))}
+            );
+          })}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenItemsDialog(false)}>Close</Button>
@@ -327,9 +398,27 @@ export default function OrderHistory() {
         <DialogTitle>Confirm {confirmAction?.type === 'cancel' ? 'Cancellation' : 'Refund'}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to {confirmAction?.type} this order?
+            Are you sure you want to{" "}
+            {confirmAction?.type === "cancel"
+              ? "cancel this order?"
+              : confirmAction?.type === "refund-all"
+              ? "refund the entire order?"
+              : "refund this item?"}
           </Typography>
+
+          {confirmAction?.type === "refund-item" && (
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              label="Reason for refund"
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          )}
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setConfirmDialogOpen(false)}>No</Button>
           <Button
