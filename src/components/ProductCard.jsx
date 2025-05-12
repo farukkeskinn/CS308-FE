@@ -62,16 +62,30 @@ import {
             </Typography>
   
             {/* Fiyat formatı */}
-            <Typography sx={{
-              color: "#1f1c66", fontWeight: "bold", mt: 1,
-              display: "flex", alignItems: "baseline"
-            }}>
+            <Typography
+              sx={{
+                color: "#1f1c66",
+                fontWeight: "bold",
+                mt: 1,
+                display: "flex",
+                alignItems: "baseline"
+              }}
+            >
               {(() => {
-                const [d, c] = product.price?.toFixed(2).split(".");
-                return <>
-                  <span style={{ fontSize: 24, fontWeight: 700 }}>${d}</span>
-                  <span style={{ fontSize: 14, marginLeft: 2 }}>.{c}</span>
-                </>;
+                // İndirimli fiyatı mı yoksa orijinal fiyatı mı göstereceğimizi belirliyoruz
+                const priceToShow = product.discounted
+                  ? product.discountedPrice
+                  : product.price;
+
+                // virgülden önceki ve sonraki kısmı ayırıyoruz
+                const [intPart, decPart] = priceToShow.toFixed(2).split(".");
+
+                return (
+                  <>
+                    <span style={{ fontSize: 24, fontWeight: 700 }}>${intPart}</span>
+                    <span style={{ fontSize: 14, marginLeft: 2 }}>.{decPart}</span>
+                  </>
+                );
               })()}
             </Typography>
           </CardContent>

@@ -20,6 +20,7 @@ import {
   Grid
 } from "@mui/material";
 import axios from "axios";
+import Checkbox from "@mui/material/Checkbox";
 import {
   ResponsiveContainer,
   LineChart,
@@ -31,14 +32,18 @@ import {
 } from "recharts";
 
 export default function SalesDashboard() {
+  const [startDate, setStartDate] = useState("2024-01-01");
+  const [endDate, setEndDate]   = useState("2027-01-01");
   const [orders, setOrders] = useState([]);
   const [rawOrders, setRawOrders] = useState([]);      // used for profit calculation
   const [revenueData, setRevenueData] = useState([]);
   const [profitData, setProfitData] = useState([]);
-
+  const [publishedProducts, setPublishedProducts] = useState([]);
+  const [showDiscountDialog, setShowDiscountDialog] = useState(false);
+  const [selectedForDiscount, setSelectedForDiscount] = useState({});
+  const [discountRate, setDiscountRate] = useState("");
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+
 
   const [unpublishedProducts, setUnpublishedProducts] = useState([]);
   const [showUnpublishedDialog, setShowUnpublishedDialog] = useState(false);
@@ -58,10 +63,12 @@ export default function SalesDashboard() {
   // 2) Whenever date range changes, fetch invoices/orders for table and revenue
   useEffect(() => {
     setLoading(true);
+
     const url =
       startDate && endDate
         ? "http://localhost:8080/api/sales-managers/invoices/dates"
         : "http://localhost:8080/api/sales-managers/orders";
+
     const params =
       startDate && endDate
         ? {
@@ -73,19 +80,21 @@ export default function SalesDashboard() {
     axios
       .get(url, { params })
       .then(res => {
-        let list;
-        if (startDate && endDate) {
-          list = res.data.invoices || [];
-        } else {
-          list = Array.isArray(res.data) ? res.data : res.data.orders || [];
-        }
+        // 1) Order list’ini doğru kaydet
+        const list = startDate && endDate
+          ? res.data.invoices || []
+          : Array.isArray(res.data)
+            ? res.data
+            : res.data.orders || [];
         setOrders(list);
 
-        // revenueData
+        // 2) Revenue grafiği için data hazırla
         const rev = list
           .map(o => ({
             date: o.orderDate.split("T")[0],
-            revenue: o.totalPrice
+            revenue: startDate && endDate
+              ? o.totalAmount     // invoice endpoint’inde totalAmount
+              : o.totalPrice      // normal orders endpoint’inde totalPrice
           }))
           .sort((a, b) => new Date(a.date) - new Date(b.date));
         setRevenueData(rev);
@@ -168,6 +177,63 @@ export default function SalesDashboard() {
     }
   };
 
+    const fetchPublished = async () => {
+        try {
+          const res = await axios.get("http://localhost:8080/api/products/published");
+          setPublishedProducts(res.data);
+          setShowDiscountDialog(true);
+        } catch (e) {
+          console.error("Published fetch error:", e);
+        }
+      };
+
+    const toggleSelect = (id) => {
+            setSelectedForDiscount(prev => ({
+              ...prev,
+              [id]: !prev[id]
+            }));
+          };
+
+          const applyDiscount = async () => {
+            const pct = parseInt(discountRate, 10);
+            if (isNaN(pct) || pct < 1 || pct > 100) {
+              return alert("Lütfen 1–100 arasında bir yüzde girin.");
+            }
+          
+            console.log(">> Applying discount %", pct, "to", selectedForDiscount);
+            for (let prod of publishedProducts) {
+              if (selectedForDiscount[prod.productId]) {
+                try {
+                  console.log(" - Sending for", prod.productId);
+                  const res = await axios.post(
+                    "http://localhost:8080/api/sales-managers/products/discount",
+                    null,
+                    { params: { productId: prod.productId, discountPercentage: pct } }
+                  );
+                  console.log("   <- response", res.data);
+                } catch (e) {
+                  console.error(`Discount error for ${prod.productId}:`, e);
+                }
+              }
+            }
+          
+            // Uyguladıktan sonra listeyi yeniden get’le ki DB’den güncel fiyatları çekelim
+            try {
+              const fresh = await axios.get("http://localhost:8080/api/products/published");
+              setPublishedProducts(fresh.data);
+              console.log("Published products refreshed", fresh.data);
+            } catch (e) {
+              console.error("Failed to refresh published list:", e);
+            }
+          
+            // Dialog’u kapat ve state’i temizle
+            setShowDiscountDialog(false);
+            setDiscountRate("");
+            setSelectedForDiscount({});
+          };
+            
+
+
   return (
     <Box p={4}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -196,6 +262,9 @@ export default function SalesDashboard() {
         <Button variant="outlined" onClick={fetchUnpublished}>
           Unpublished Products
         </Button>
+        <Button variant="outlined" onClick={fetchPublished}>
+          Apply Discount
+        </Button>
       </Stack>
 
       {loading ? (
@@ -204,32 +273,31 @@ export default function SalesDashboard() {
         <Typography>No orders found for the selected date range.</Typography>
       ) : (
         <>
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Total</TableCell>
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Order ID</TableCell>
+                <TableCell>Invoice</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map(order => (
+                <TableRow key={order.orderId}>
+                  <TableCell>{order.orderId}</TableCell>
+                  <TableCell>
+                    {order.invoiceUrl
+                      ? <a href={order.invoiceUrl} target="_blank" rel="noopener noreferrer">
+                          Download
+                        </a>
+                      : "—"
+                    }
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map(order => (
-                  <TableRow key={order.orderId}>
-                    <TableCell>{order.orderId}</TableCell>
-                    <TableCell>
-                      {new Date(order.orderDate).toLocaleString("tr-TR")}
-                    </TableCell>
-                    <TableCell>{order.orderStatus}</TableCell>
-                    <TableCell align="right">
-                      ${order.totalPrice.toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
           <Grid container spacing={4} mt={4}>
             <Grid item xs={6}>
@@ -278,68 +346,133 @@ export default function SalesDashboard() {
         </>
       )}
 
+{/* Unpublished Products Dialog */}
+<Dialog
+  open={showUnpublishedDialog}
+  onClose={() => setShowUnpublishedDialog(false)}
+  fullWidth
+  maxWidth="md"
+>
+  <DialogTitle>Unpublished Products</DialogTitle>
+  <DialogContent>
+    {unpublishedProducts.length === 0 ? (
+      <Typography>No unpublished products.</Typography>
+    ) : (
+      <TableContainer component={Paper}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Product ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>New Price ($)</TableCell>
+              <TableCell>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {unpublishedProducts.map(prod => (
+              <TableRow key={prod.productId}>
+                <TableCell>{prod.productId}</TableCell>
+                <TableCell>{prod.name}</TableCell>
+                <TableCell>
+                  <TextField
+                    size="small"
+                    type="number"
+                    value={priceInputs[prod.productId] || ""}
+                    onChange={e =>
+                      setPriceInputs({
+                        ...priceInputs,
+                        [prod.productId]: e.target.value
+                      })
+                    }
+                    InputProps={{ inputProps: { min: 0 } }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => handleSetPrice(prod.productId)}
+                  >
+                    Set Price
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setShowUnpublishedDialog(false)}>
+          Kapat
+        </Button>
+      </DialogActions>
+      </Dialog>
+
+      {/* Apply Discount Dialog */}
       <Dialog
-        open={showUnpublishedDialog}
-        onClose={() => setShowUnpublishedDialog(false)}
+        open={showDiscountDialog}
+        onClose={() => setShowDiscountDialog(false)}
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>Unpublished Products</DialogTitle>
+        <DialogTitle>Apply Discount to Published Products</DialogTitle>
         <DialogContent>
-          {unpublishedProducts.length === 0 ? (
-            <Typography>No unpublished products.</Typography>
-          ) : (
-            <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>New Price ($)</TableCell>
-                    <TableCell>Action</TableCell>
+          <Box mb={2}>
+            <TextField
+              label="Discount %"
+              type="number"
+              value={discountRate}
+              onChange={e => setDiscountRate(e.target.value)}
+              InputProps={{ inputProps: { min: 1, max: 100 } }}
+            />
+          </Box>
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell>Product ID</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell align="right">Original Price ($)</TableCell>
+                  <TableCell align="right">Discounted Price ($)</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {publishedProducts.map(p => (
+                  <TableRow key={p.productId}>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={!!selectedForDiscount[p.productId]}
+                        onChange={() => toggleSelect(p.productId)}
+                      />
+                    </TableCell>
+                    <TableCell>{p.productId}</TableCell>
+                    <TableCell>{p.name}</TableCell>
+                    {/* Orijinal fiyat her zaman price */}
+                    <TableCell align="right">{p.price.toFixed(2)}</TableCell>
+                    {/* İndirime tabi ise discountedPrice, değilse — */}
+                    <TableCell align="right">
+                      {p.discounted
+                        ? p.discountedPrice.toFixed(2)
+                        : '—'
+                      }
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {unpublishedProducts.map(prod => (
-                    <TableRow key={prod.productId}>
-                      <TableCell>{prod.productId}</TableCell>
-                      <TableCell>{prod.name}</TableCell>
-                      <TableCell>
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={priceInputs[prod.productId] || ""}
-                          onChange={e =>
-                            setPriceInputs({
-                              priceInputs,
-                              [prod.productId]: e.target.value
-                            })
-                          }
-                          InputProps={{ inputProps: { min: 0 } }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          onClick={() => handleSetPrice(prod.productId)}
-                        >
-                          Set Price
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowUnpublishedDialog(false)}>
-            Kapat
+          <Button onClick={() => setShowDiscountDialog(false)}>Cancel</Button>
+          <Button variant="contained" onClick={applyDiscount}>
+            Apply
           </Button>
         </DialogActions>
       </Dialog>
+ 
     </Box>
   );
 }

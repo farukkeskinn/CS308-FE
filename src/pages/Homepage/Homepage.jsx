@@ -285,15 +285,22 @@ export default function HomePage() {
                         color: "#1f1c66", fontWeight: "bold", mt: 1,
                         display: "flex", alignItems: "baseline"
                       }}>
-                        {(() => {
-                          const [dollars, cents] = (product.price || 0).toFixed(2).split(".");
-                          return (
-                            <>
-                              <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
-                              <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
-                            </>
-                          );
-                        })()}
+                      {(() => {
+                        // Eğer indirim uygulanmışsa discountedPrice, yoksa regular price
+                        const priceToShow = product.discounted
+                          ? product.discountedPrice
+                          : product.price;
+
+                        // priceToShow undefined olabilir, bu yüzden || 0 ile guard’lıyoruz
+                        const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
+
+                        return (
+                          <>
+                            <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
+                            <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
+                          </>
+                        );
+                      })()}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
