@@ -316,17 +316,22 @@ export default function CategoryPage() {
                           alignItems: "baseline",
                         }}
                       >
-                        {(() => {
-                          // Add null check for price
-                          const price = product.price || 0;
-                          const [dollars, cents] = price.toFixed(2).split(".");
-                          return (
-                            <>
-                              <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
-                              <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
-                            </>
-                          );
-                        })()}
+                      {(() => {
+                        // İndirim uygulanmışsa discountedPrice, aksi halde normal price
+                        const priceToShow = product.discounted
+                          ? product.discountedPrice
+                          : product.price;
+
+                        // Eğer undefined/null gelirse 0’a düşsün
+                        const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
+
+                        return (
+                          <>
+                            <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
+                            <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
+                          </>
+                        );
+                      })()}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
