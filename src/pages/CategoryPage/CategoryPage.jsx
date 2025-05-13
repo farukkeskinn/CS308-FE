@@ -26,7 +26,7 @@ import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
 import Favorite from "@mui/icons-material/Favorite";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
 import { useCartContext } from "../../context/CartContext";
-import { useWishlist }   from "../../context/WishlistContext"; 
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function CategoryPage() {
   const { categoryId } = useParams();
@@ -74,9 +74,7 @@ export default function CategoryPage() {
       .get(`http://localhost:8080/api/products/by-category/${categoryId}`)
       .then((response) => {
         // Filter out products that aren't published
-        const publishedProducts = response.data.content.filter(
-          product => product.published === true && product.price !== null
-        );
+        const publishedProducts = response.data.content;
         setProducts(publishedProducts || []);
         setLoading(false);
       })
@@ -270,17 +268,17 @@ export default function CategoryPage() {
                   }}
                 >
                   <IconButton
-                    onClick={()=>{
+                    onClick={() => {
                       const token = localStorage.getItem("jwtToken");
-                      if (!token) { window.location.href="/login"; return; }
+                      if (!token) { window.location.href = "/login"; return; }
                       toggleWishlist(product);
                     }}
                     sx={{
-                      position:"absolute", top:8, right:8, zIndex:2,
+                      position: "absolute", top: 8, right: 8, zIndex: 2,
                       color: existsInWishlist(product.productId) ? "error.main" : "grey.500",
                     }}
                   >
-                    {existsInWishlist(product.productId) ? <Favorite/> : <FavoriteBorder/>}
+                    {existsInWishlist(product.productId) ? <Favorite /> : <FavoriteBorder />}
                   </IconButton>
 
                   <CardActionArea component={Link} to={`/product/${product.productId}`}>
