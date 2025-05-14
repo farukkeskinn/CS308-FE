@@ -218,13 +218,17 @@ export default function OrderHistory() {
                   <td>{order.orderStatus}</td>
                   <td>{order.paymentStatus}</td>
                   <td>
-                    {order.invoiceLink ? (
-                      <a href={order.invoiceLink} target="_blank" rel="noopener noreferrer">
-                        View Invoice
-                      </a>
-                    ) : (
-                      "Not Available"
-                    )}
+                    {order.invoiceLink?.startsWith("http")
+                      ? (
+                          <a
+                            href={order.invoiceLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Invoice
+                          </a>
+                        )
+                      : "Not Available" }
                   </td>
                   <td>
                     <Button
