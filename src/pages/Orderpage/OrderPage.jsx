@@ -115,7 +115,7 @@ export default function OrderHistory() {
         });
       } else if (confirmAction?.type === "refund-item") {
         // Refund single item
-        console.log("Refunding item:", confirmAction.orderItemId);
+        console.log("Refunding item:", confirmAction);
         const endpoint = `http://localhost:8080/api/refunds/request`;
         console.log("my endpoint", endpoint);
         response = await fetch(endpoint, {
@@ -343,15 +343,12 @@ export default function OrderHistory() {
                           textTransform: "none",
                         }}
                         onClick={() => {
-                          const matchingOrderItem = parentOrder?.orderItems.find(
-                            (oi) => oi.productId === item.productId
-                          );
-                          console.log("Matching Order Item:", matchingOrderItem);
-                          
+                          console.log("Item for refund:", item);
+
                           setConfirmAction({
                             type: "refund-item",
                             orderId: parentOrder?.orderId,
-                            orderItemId: matchingOrderItem?.productId, // ✅ proper access
+                            orderItemId: item.productId, // ✅ proper access
                             reason: refundReason,
                           });
                           

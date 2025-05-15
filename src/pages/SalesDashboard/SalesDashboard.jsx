@@ -20,10 +20,13 @@ import {
   Grid
 } from "@mui/material";
 import axios from "axios";
+import { green, pink } from '@mui/material/colors';
 import Checkbox from "@mui/material/Checkbox";
 import {
   ResponsiveContainer,
   LineChart,
+  Legend,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -245,24 +248,67 @@ export default function SalesDashboard() {
       </Typography>
 
       <Stack direction="row" spacing={2} mt={2} mb={2}>
-        <TextField
-          label="Start Date"
-          type="date"
-          value={startDate}
-          onChange={e => setStartDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="End Date"
-          type="date"
-          value={endDate}
-          onChange={e => setEndDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-        />
-        <Button variant="outlined" onClick={fetchUnpublished}>
+      <TextField
+        label="Start Date"
+        type="date"
+        value={startDate}
+        onChange={e => setStartDate(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            // normal durumdaki çerçeve
+            '& fieldset': {
+              borderColor: 'blue',
+            },
+            // hover durumu
+            '&:hover fieldset': {
+              borderColor: 'blue',
+            },
+            // odaklanınca (focused)
+            '&.Mui-focused fieldset': {
+              borderColor: 'blue',
+            },
+          },
+          // label odaklanınca mavi olsun
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: 'blue',
+          },
+        }}
+      />
+
+      <TextField
+        label="End Date"
+        type="date"
+        value={endDate}
+        onChange={e => setEndDate(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'blue',
+            },
+            '&:hover fieldset': {
+              borderColor: 'blue',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: 'blue',
+            },
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: 'blue',
+          },
+        }}
+      />
+        <Button 
+          variant="contained" 
+          sx={{ backgroundColor: pink[500], '&:hover': { backgroundColor: pink[700] } }}
+          onClick={fetchUnpublished}>
           Unpublished Products
         </Button>
-        <Button variant="outlined" onClick={fetchPublished}>
+        <Button 
+         variant="contained"
+         sx={{ backgroundColor: 'green', '&:hover': { backgroundColor: 'darkgreen' } }} 
+         onClick={fetchPublished}>
           Apply Discount
         </Button>
       </Stack>
@@ -305,20 +351,60 @@ export default function SalesDashboard() {
                 Revenue Chart
               </Typography>
               <Paper sx={{ height: 300, p: 2 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip formatter={val => `$${val.toFixed(2)}`} />
-                    <Line
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#1976d2"
-                      dot
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData}>
+                  {/* 1) Gradient tanımı */}
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1976d2" stopOpacity={0.6}/>
+                      <stop offset="95%" stopColor="#1976d2" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+
+                  {/* 2) Daha belirgin grid */}
+                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+
+                  {/* 3) Özelleştirilmiş eksenler */}
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: '#555', fontSize: 12, angle: -45, textAnchor: 'end' }}
+                    height={60}
+                    interval={0}
+                  />
+                  <YAxis
+                    tick={{ fill: '#555', fontSize: 12 }}
+                    width={60}
+                  />
+
+                  {/* 4) Legend */}
+                  <Legend verticalAlign="top" height={36} />
+
+                  {/* 5) Tooltip */}
+                  <Tooltip formatter={val => `$${val.toFixed(2)}`} />
+
+                  {/* 6) Dolgu alanı */}
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="none"
+                    fill="url(#colorRev)"
+                    isAnimationActive={true}
+                    animationDuration={2000}
+                  />
+
+                  {/* 7) Vurgulu çizgi */}
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#1976d2"
+                    strokeWidth={3}
+                    dot={{ r: 5, fill: '#1976d2', strokeWidth: 2 }}
+                    activeDot={{ r: 8 }}
+                    isAnimationActive={true}
+                    animationDuration={1500}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
               </Paper>
             </Grid>
             <Grid item xs={6}>
@@ -328,15 +414,27 @@ export default function SalesDashboard() {
               <Paper sx={{ height: 300, p: 2 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={profitData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip formatter={val => `$${val.toFixed(2)}`} />
+                    <defs>
+                      <linearGradient id="colorProf" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#388e3c" stopOpacity={0.6}/>
+                        <stop offset="95%" stopColor="#388e3c" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                    <XAxis dataKey="date" tick={{ fill: '#555', fontSize: 12, angle: -45, textAnchor: 'end' }} height={60} interval={0}/>
+                    <YAxis tick={{ fill: '#555', fontSize: 12 }} width={60}/>
+                    <Legend verticalAlign="top" height={36}/>
+                    <Tooltip formatter={val => `$${val.toFixed(2)}`}/>
+                    <Area type="monotone" dataKey="profit" stroke="none" fill="url(#colorProf)" isAnimationActive animationDuration={2000}/>
                     <Line
                       type="monotone"
                       dataKey="profit"
                       stroke="#388e3c"
-                      dot
+                      strokeWidth={3}
+                      dot={{ r: 5, fill: '#388e3c', strokeWidth: 2 }}
+                      activeDot={{ r: 8 }}
+                      isAnimationActive
+                      animationDuration={1500}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -405,7 +503,7 @@ export default function SalesDashboard() {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setShowUnpublishedDialog(false)}>
-          Kapat
+          Close
         </Button>
       </DialogActions>
       </Dialog>
@@ -419,17 +517,46 @@ export default function SalesDashboard() {
       >
         <DialogTitle>Apply Discount to Published Products</DialogTitle>
         <DialogContent>
-          <Box mb={2}>
-            <TextField
-              label="Discount %"
-              type="number"
-              value={discountRate}
-              onChange={e => setDiscountRate(e.target.value)}
-              InputProps={{ inputProps: { min: 1, max: 100 } }}
-            />
-          </Box>
+        <Box mb={2}>
+          <TextField
+            label="Discount %"
+            type="number"
+            value={discountRate}
+            onChange={e => setDiscountRate(e.target.value)}
+            InputProps={{
+              inputProps: { min: 1, max: 100 },
+            }}
+            sx={{
+              width: 220,                  // yatay genişlik
+              boxShadow: 3,                // hafif gölge
+              borderRadius: 2,             // köşeleri yuvarla
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: green[500],
+                },
+                '&:hover fieldset': {
+                  borderColor: green[700],
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: green[700],
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: green[500],
+              },
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: green[700],
+              },
+              // opsiyonel: input içindeki yazıyı ortala ve büyüt
+              '& .MuiOutlinedInput-input': {
+                textAlign: 'center',
+                fontSize: '1.1rem',
+              },
+            }}
+          />
+        </Box>
           <TableContainer component={Paper}>
-            <Table size="small">
+            <Table size="medium">
               <TableHead>
                 <TableRow>
                   <TableCell></TableCell>
@@ -454,7 +581,7 @@ export default function SalesDashboard() {
                     <TableCell align="right">{p.price.toFixed(2)}</TableCell>
                     {/* İndirime tabi ise discountedPrice, değilse — */}
                     <TableCell align="right">
-                      {p.discounted
+                      {p.discounted && p.discountedPrice != null
                         ? p.discountedPrice.toFixed(2)
                         : '—'
                       }

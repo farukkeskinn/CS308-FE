@@ -25,12 +25,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { ShoppingCart, Favorite, FavoriteBorder } from "@mui/icons-material";
 import { useCartContext } from "../../context/CartContext";
-import { useWishlist }       from "../../context/WishlistContext"; 
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function ProductPage() {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviewsVisible, setReviewsVisible] = useState(false);
@@ -39,8 +38,8 @@ export default function ProductPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [favoriteSnackbarOpen, setFavoriteSnackbarOpen] = useState(false);
   const [favoriteMessage, setFavoriteMessage] = useState("");
-  const { existsInWishlist, toggleWishlist } = useWishlist();    
-  const [snack, setSnack] = useState({open:false,msg:"",color:"#2e7d32"});
+  const { existsInWishlist, toggleWishlist } = useWishlist();
+  const [snack, setSnack] = useState({ open: false, msg: "", color: "#2e7d32" });
 
   useEffect(() => {
     if (!productId) return;
@@ -50,12 +49,8 @@ export default function ProductPage() {
 
       try {
         // 1️⃣ Get the core product (used for addToCart)
-        const productRes = await axios.get(`http://localhost:8080/api/products/${productId}`);
+        const productRes = await axios.get(`http://localhost:8080/api/products/${productId}/details`);
         setProduct(productRes.data);
-        console.log("📸 product.imageUrl =>", productRes.data.image_url);
-
-        // 2️⃣ Fetch details (optional)
-        await axios.get(`http://localhost:8080/api/products/${productId}/details`);
 
         // 3️⃣ Then fetch recommended products
         const recommendedRes = await axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
@@ -82,7 +77,7 @@ export default function ProductPage() {
     return <Typography align="center" mt={5}>Product not found.</Typography>;
   }
 
-  const fav = existsInWishlist(product.productId);     
+  const fav = existsInWishlist(product.productId);
 
   const totalReviews = product.reviews ? product.reviews.length : 0;
   const averageRating = totalReviews > 0
@@ -106,7 +101,7 @@ export default function ProductPage() {
         <Grid container spacing={4} mt={3}>
           <Grid item xs={12} md={5}>
             <img
-              src={product.image_url}
+              src={product.imageUrl}
               alt={product.name}
               style={{ width: "100%", borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}
             />
@@ -199,21 +194,23 @@ export default function ProductPage() {
                     {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
                   </Button>
                   <Button fullWidth variant="contained"
-                      startIcon={fav ? <Favorite/> : <FavoriteBorder/>}
-                      color={fav ? "success" : "error"}
-                      onClick={async ()=>{
-                        const token=localStorage.getItem("jwtToken");
-                        if(!token){ window.location.href="/login"; return; }
+                    startIcon={fav ? <Favorite /> : <FavoriteBorder />}
+                    color={fav ? "success" : "error"}
+                    onClick={async () => {
+                      const token = localStorage.getItem("jwtToken");
+                      if (!token) { window.location.href = "/login"; return; }
 
-                        await toggleWishlist(product);
-                        setSnack({open:true,
-                                  msg: fav? "Removed from favourites" : "Added to favourites",
-                                  color: fav? "#d32f2f" : "#2e7d32"});
-                      }}
-                      sx={{
-                        backgroundColor: fav? "#2e7d32" : "#d32f2f",
-                        "&:hover":{backgroundColor: fav? "#1b5e20" : "#b71c1c"}
-                      }}>
+                      await toggleWishlist(product);
+                      setSnack({
+                        open: true,
+                        msg: fav ? "Removed from favourites" : "Added to favourites",
+                        color: fav ? "#d32f2f" : "#2e7d32"
+                      });
+                    }}
+                    sx={{
+                      backgroundColor: fav ? "#2e7d32" : "#d32f2f",
+                      "&:hover": { backgroundColor: fav ? "#1b5e20" : "#b71c1c" }
+                    }}>
                     {fav ? "Remove from favourites" : "Add to favourites"}
                   </Button>
                 </Box>
@@ -316,9 +313,9 @@ export default function ProductPage() {
               </Typography>
 
               {(() => {
-                const acceptedReviews = product.reviews.filter(
-                  (review) => review.approvalStatus === 'approved'
-                );
+                const acceptedReviews = Array.isArray(product.reviews)
+                  ? product.reviews.filter(r => r.approvalStatus?.toLowerCase() === 'approved')
+                  : [];
 
                 return acceptedReviews.length > 0 ? (
                   <ul className="list-group mt-2">
