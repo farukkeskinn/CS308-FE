@@ -4,7 +4,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginIcon from '@mui/icons-material/Login';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchBar from "./SearchBar";
-import { Box } from "@mui/material";
+import { IconButton, Snackbar, Box } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import { useCartContext } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";  
@@ -22,6 +22,7 @@ const Navbar = () => {
   const { cartItems, setCartItems } = useCartContext();
     // ➤ useWishlist içinden sayacı alalım
   const { items: favItems, loading: favLoading } = useWishlist();
+  const [showLoginInfo, setShowLoginInfo] = useState(false);
   const favCount = favLoading ? 0 : favItems.length;
 
   const { items } = useWishlist();
@@ -213,21 +214,64 @@ const Navbar = () => {
 
             {/* Wishlist kalp ikonu – müşteriler ve giriş yapmamış kullanıcılar için göster */}
             {(!token || isCustomer) && (
-              <Link to="/wishlist" className="text-white fs-5" style={{ marginRight: 5, marginLeft: 5 }}>
-                <Badge
-                  badgeContent={favCount}
-                  color="error"
-                  overlap="rectangular"
-                  anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                  sx={{ "& .MuiBadge-badge": { fontSize: "0.75rem", height: 18, minWidth: 18 } }}
+              /* -------- GİRİŞ YAPILMIŞSA -------- */
+              token ? (
+                <Link
+                  to="/wishlist"
+                  className="text-white fs-5"
+                  style={{ marginLeft: 5, marginRight: 5 }}
                 >
-                  {favCount > 0 ? (
-                    <FavoriteIcon fontSize="medium" />
-                  ) : (
-                    <FavoriteBorderIcon fontSize="medium" />
-                  )}
-                </Badge>
-              </Link>
+                  <Badge
+                    badgeContent={favCount}
+                    color="error"
+                    overlap="rectangular"
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    sx={{ "& .MuiBadge-badge": { fontSize: "0.75rem", height: 18, minWidth: 18 } }}
+                  >
+                    {favCount > 0 ? (
+                      <FavoriteIcon fontSize="medium" />
+                    ) : (
+                      <FavoriteBorderIcon fontSize="medium" />
+                    )}
+                  </Badge>
+                </Link>
+              ) : (
+                /* -------- GİRİŞ YAPILMAMIŞSA -------- */
+                <>
+                  <IconButton
+                    color="inherit"
+                    onClick={() => setShowLoginInfo(true)}
+                    sx={{ marginLeft: 1, marginRight: 1, color: "#fff" }}
+                  >
+                    <Badge
+                      /* giriş yapılmadığı için favCount bilinmez; 0 gösterme */
+                      badgeContent={0}
+                      color="error"
+                      overlap="rectangular"
+                      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                      sx={{ "& .MuiBadge-badge": { fontSize: "0.75rem", height: 18, minWidth: 18 } }}
+                    >
+                      <FavoriteBorderIcon fontSize="medium" />
+                    </Badge>
+                  </IconButton>
+
+                  {/* “Log in to see your favorites” snackbar’ı */}
+                  <Snackbar
+                    open={showLoginInfo}
+                    autoHideDuration={3000}
+                    onClose={() => setShowLoginInfo(false)}
+                    message="Log in to see your favorites"
+                    anchorOrigin={{ vertical: "center", horizontal: "center" }}
+                    ContentProps={{
+                      sx: {
+                        backgroundColor: "#1f1c66", // 🔴 istediğiniz rengi verebilirsiniz #d32f2f
+                        color: "#fff",              // yazı rengi
+                        fontWeight: "bold",
+                      },
+                    }}
+                  />
+                </>
+              )
             )}
 
 

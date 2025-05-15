@@ -438,7 +438,6 @@ export default function SalesDashboard() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-
               </Paper>
             </Grid>
           </Grid>

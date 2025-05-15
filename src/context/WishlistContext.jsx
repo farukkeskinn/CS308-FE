@@ -31,6 +31,10 @@ export function WishlistProvider({ children }) {
   /* ------------  listeyi backend’den çek  ------------ */
   const loadWishlist = useCallback(async () => {
     try {
+      // Token yoksa backend’e istek atmayalım
+      const token = localStorage.getItem("jwtToken");
+      if (!token) { setItems([]); setLoading(false); return; }
+
       const raw = await api.getWishlist();
 
       // Eğer API doğrudan dizi döndürürse kullan; aksi hâlde
@@ -47,7 +51,13 @@ export function WishlistProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    loadWishlist();
+    loadWishlist();                       // ilk mount
+
+    const onStorage = (e) => {
+      if (e.key === "jwtToken") loadWishlist();   // token set / remove
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, [loadWishlist]);
 
   /* ------------  yardımcılar  ------------ */
@@ -96,6 +106,7 @@ export function WishlistProvider({ children }) {
         addProduct,
         removeProduct,
         toggleWishlist,
+        refreshWishlist: loadWishlist,
       }}
     >
       {children}

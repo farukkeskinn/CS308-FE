@@ -11,12 +11,14 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const {refreshWishlist} = useWishlist();
   const [emailError] = useState("");
   const [passwordError ] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -92,6 +94,7 @@ const handleLogin = async (e) => {
       }
 
       navigate("/");
+      refreshWishlist();
     } else {
       setLoginError(true);
     }
