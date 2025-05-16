@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { CssBaseline } from "@mui/material";
+
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   Box,
   Typography,
@@ -34,6 +37,35 @@ import {
   Tooltip
 } from "recharts";
 
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    background: {
+      default: "#212020",
+      paper: "#1e1e1e",
+    },
+    text: {
+      primary: "#ffffff",
+      secondary: "#aaaaaa",
+    },
+    primary: {
+      main: "#90caf9",
+    },
+    secondary: {
+      main: "#f48fb1",
+    },
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#1e1e1e",
+        },
+      },
+    },
+  },
+});
 export default function SalesDashboard() {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate]   = useState("2027-01-01");
@@ -83,7 +115,6 @@ export default function SalesDashboard() {
     axios
       .get(url, { params })
       .then(res => {
-        // 1) Order list’ini doğru kaydet
         const list = startDate && endDate
           ? res.data.invoices || []
           : Array.isArray(res.data)
@@ -91,13 +122,13 @@ export default function SalesDashboard() {
             : res.data.orders || [];
         setOrders(list);
 
-        // 2) Revenue grafiği için data hazırla
+       
         const rev = list
           .map(o => ({
             date: o.orderDate.split("T")[0],
             revenue: startDate && endDate
-              ? o.totalAmount     // invoice endpoint’inde totalAmount
-              : o.totalPrice      // normal orders endpoint’inde totalPrice
+              ? o.totalAmount     
+              : o.totalPrice      
           }))
           .sort((a, b) => new Date(a.date) - new Date(b.date));
         setRevenueData(rev);
@@ -110,11 +141,9 @@ export default function SalesDashboard() {
       .finally(() => setLoading(false));
   }, [startDate, endDate]);
 
-  // 3) Calculate profitData whenever rawOrders or date range changes
   useEffect(() => {
     let ordersToCompute = rawOrders;
   
-    // Eğer tarih aralığı girildiyse, o aralığa göre filtrele
     if (startDate && endDate) {
       const from = new Date(startDate);
       const to = new Date(endDate);
@@ -125,7 +154,7 @@ export default function SalesDashboard() {
       });
     }
   
-    // Profit hesaplama
+   
     const prof = ordersToCompute
       .map(order => {
         const costSum = order.orderItems.reduce(
@@ -220,7 +249,7 @@ export default function SalesDashboard() {
               }
             }
           
-            // Uyguladıktan sonra listeyi yeniden get’le ki DB’den güncel fiyatları çekelim
+            
             try {
               const fresh = await axios.get("http://localhost:8080/api/products/published");
               setPublishedProducts(fresh.data);
@@ -229,7 +258,7 @@ export default function SalesDashboard() {
               console.error("Failed to refresh published list:", e);
             }
           
-            // Dialog’u kapat ve state’i temizle
+            
             setShowDiscountDialog(false);
             setDiscountRate("");
             setSelectedForDiscount({});
@@ -238,11 +267,13 @@ export default function SalesDashboard() {
 
 
   return (
+   <ThemeProvider theme={darkTheme}>
+    <CssBaseline />
     <Box p={4}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Sales Manager Panel
-      </Typography>
-
+      
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Sales Manager Panel
+        </Typography>
       <Typography variant="h6" mt={4}>
         Invoices
       </Typography>
@@ -255,23 +286,26 @@ export default function SalesDashboard() {
         onChange={e => setStartDate(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{
+          input: { color: "#fff" },
+          boxShadow: 2,                   
+          borderRadius: 2,                
           '& .MuiOutlinedInput-root': {
-            // normal durumdaki çerçeve
             '& fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
+              borderWidth: 2,
             },
-            // hover durumu
             '&:hover fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
             },
-            // odaklanınca (focused)
             '&.Mui-focused fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
             },
           },
-          // label odaklanınca mavi olsun
+          '& .MuiInputLabel-root': {
+            color: '#cccccc',
+          },
           '& .MuiInputLabel-root.Mui-focused': {
-            color: 'blue',
+            color: '#ffffff',
           },
         }}
       />
@@ -283,19 +317,26 @@ export default function SalesDashboard() {
         onChange={e => setEndDate(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{
+          input: { color: "#fff" },
+          boxShadow: 2,
+          borderRadius: 2,
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
+              borderWidth: 2,
             },
             '&:hover fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
             },
             '&.Mui-focused fieldset': {
-              borderColor: 'blue',
+              borderColor: '#ffffff',
             },
           },
+          '& .MuiInputLabel-root': {
+            color: '#cccccc',
+          },
           '& .MuiInputLabel-root.Mui-focused': {
-            color: 'blue',
+            color: '#ffffff',
           },
         }}
       />
@@ -527,9 +568,9 @@ export default function SalesDashboard() {
               inputProps: { min: 1, max: 100 },
             }}
             sx={{
-              width: 220,                  // yatay genişlik
-              boxShadow: 3,                // hafif gölge
-              borderRadius: 2,             // köşeleri yuvarla
+              width: 220,                 
+              boxShadow: 3,                
+              borderRadius: 2,             
               '& .MuiOutlinedInput-root': {
                 '& fieldset': {
                   borderColor: green[500],
@@ -547,7 +588,6 @@ export default function SalesDashboard() {
               '& .MuiInputLabel-root.Mui-focused': {
                 color: green[700],
               },
-              // opsiyonel: input içindeki yazıyı ortala ve büyüt
               '& .MuiOutlinedInput-input': {
                 textAlign: 'center',
                 fontSize: '1.1rem',
@@ -601,5 +641,6 @@ export default function SalesDashboard() {
       </Dialog>
  
     </Box>
+    </ThemeProvider>
   );
 }

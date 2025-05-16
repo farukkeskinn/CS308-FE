@@ -1,4 +1,5 @@
 // src/pages/HomePage.jsx
+import ProductCard from "../../components/ProductCard";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -227,109 +228,7 @@ export default function HomePage() {
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
-                <Card
-                  sx={{
-                    position: "relative",
-                    borderRadius: "10px",
-                    boxShadow: 3,
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <IconButton
-                    onClick={() => {
-                      const token = localStorage.getItem("jwtToken");
-                      if (!token) {            // ⬅️ oturum yok
-                        setOpenDialog(true);   // 👉 diyalogu aç
-                        return;                // toggle çağırma
-                      }
-                      toggleWishlist(product);
-                    }}
-                    sx={{
-                      position: "absolute", top: 8, right: 8,
-                      color: existsInWishlist(product.productId) ? "error.main" : "grey.500",
-                      zIndex: 2,
-                    }}
-                  >
-                    {existsInWishlist(product.productId) ? <Favorite /> : <FavoriteBorder />}
-                  </IconButton>
-
-                  {/* ------ Ürün görsel / detay linki ------ */}
-                  <CardActionArea component={Link} to={`/product/${product.productId}`}>
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={product.image_url}
-                      alt={product.name}
-                      sx={{ objectFit: "contain", p: 2 }}
-                    />
-                    <CardContent>
-                      <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {product.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {product.description && product.description.length > 80
-                          ? product.description.substring(0, 80) + "..."
-                          : product.description}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ mt: 1 }}
-                        color={product.stock === 0 ? "error" : "text.secondary"}
-                      >
-                        {product.stock === 0 ? "Out of Stock" : `In Stock: ${product.stock}`}
-                      </Typography>
-                      <Typography sx={{
-                        color: "#1f1c66", fontWeight: "bold", mt: 1,
-                        display: "flex", alignItems: "baseline"
-                      }}>
-                      {(() => {
-                        // Eğer indirim uygulanmışsa discountedPrice, yoksa regular price
-                        const priceToShow = product.discounted
-                          ? product.discountedPrice
-                          : product.price;
-
-                        // priceToShow undefined olabilir, bu yüzden || 0 ile guard’lıyoruz
-                        const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
-
-                        return (
-                          <>
-                            <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
-                            <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
-                          </>
-                        );
-                      })()}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-
-                  {/* ------ Sepete ekle butonu ------ */}
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<ShoppingCart />}
-                    disabled={product.stock === 0}
-                    onClick={() => {
-                      setCartClicked(prev => ({ ...prev, [product.productId]: true }));
-                      addToCart(product);
-                      setTimeout(() =>
-                        setCartClicked(prev => ({ ...prev, [product.productId]: false })), 300);
-                    }}
-                    sx={{
-                      mt: "auto", borderRadius: "0 0 15px 15px",
-                      backgroundColor: cartClicked[product.productId] ? "#2ecc71" : "#1f1c66",
-                      color: "white", fontWeight: "bold", fontSize: 14, height: 45,
-                      transition: "background-color .3s ease",
-                      "&:hover": {
-                        backgroundColor: cartClicked[product.productId] ? "#27ae60" : "#181552",
-                      }
-                    }}
-                  >
-                    {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-                  </Button>
-                </Card>
+                 <ProductCard product={product} />
               </Grid>
             ))
           ) : (
