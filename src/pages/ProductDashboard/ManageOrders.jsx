@@ -1,4 +1,3 @@
-// src/pages/ProductDashboard/ManageOrders.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -14,24 +13,22 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Paper
 } from "@mui/material";
 
 export default function ManageOrders() {
-  const [orders, setOrders]             = useState([]);
-  const [loading, setLoading]           = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Confirm‐status dialog state
-  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [currentStatus, setCurrentStatus]     = useState("");
-  const [nextStatus, setNextStatus]           = useState("");
+  const [currentStatus, setCurrentStatus] = useState("");
+  const [nextStatus, setNextStatus] = useState("");
 
-  // Address‐view dialog state
-  const [addrDialogOpen, setAddrDialogOpen]   = useState(false);
-  const [addressData, setAddressData]         = useState(null);
+  const [addrDialogOpen, setAddrDialogOpen] = useState(false);
+  const [addressData, setAddressData] = useState(null);
 
-  // load all orders
   const loadOrders = () => {
     setLoading(true);
     axios.get("http://localhost:8080/api/orders")
@@ -44,15 +41,14 @@ export default function ManageOrders() {
     loadOrders();
   }, []);
 
-  // compute next in PROCESSING → IN_TRANSIT → DELIVERED
   const calcNextStatus = s =>
     s === "PROCESSING" ? "IN_TRANSIT"
-  : s === "IN_TRANSIT"  ? "DELIVERED"
-  : /* else */           null;
+    : s === "IN_TRANSIT" ? "DELIVERED"
+    : null;
 
   const openConfirm = o => {
     const ns = calcNextStatus(o.orderStatus);
-    if (!ns) return; // already DELIVERED
+    if (!ns) return;
     setSelectedOrderId(o.orderId);
     setCurrentStatus(o.orderStatus);
     setNextStatus(ns);
@@ -62,7 +58,6 @@ export default function ManageOrders() {
   const onConfirm = () => {
     setDialogOpen(false);
     setLoading(true);
-
     axios
       .patch(
         `http://localhost:8080/api/product-managers/orders/${selectedOrderId}/status`,
@@ -73,62 +68,61 @@ export default function ManageOrders() {
       .finally(() => loadOrders());
   };
 
-  // open address dialog using the already-fetched shippingAddress
   const openAddressDialog = o => {
-    if (!o.shippingAddress) {
-      return alert("No shipping address available");
-    }
+    if (!o.shippingAddress) return alert("No shipping address available");
     setAddressData(o.shippingAddress);
     setAddrDialogOpen(true);
   };
 
   if (loading) {
     return (
-      <Box textAlign="center" p={4}>
+      <Box textAlign="center" p={4} sx={{ backgroundColor: "#000", minHeight: "100vh" }}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box p={4}>
-      <Typography variant="h4" gutterBottom>
+    <Box p={4} sx={{ backgroundColor: "#000", minHeight: "100vh" }}>
+      <Typography variant="h4" gutterBottom sx={{ color: "#fff" }}>
         Manage Orders
       </Typography>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Order ID</TableCell>
-            <TableCell>Total Price</TableCell>
-            <TableCell>Order Status</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
+      <Paper sx={{ backgroundColor: "#111", color: "#fff" }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              {["Order ID", "Total Price", "Order Status", "Address", "Invoice", "Action"].map(header => (
+                <TableCell key={header} sx={{ color: "#fff", fontWeight: "bold" }}>{header}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
 
-        <TableBody>
-          {orders.map(o => {
-            const ns = calcNextStatus(o.orderStatus);
-            return (
-              <TableRow key={o.orderId}>
-                <TableCell>{o.orderId}</TableCell>
-                <TableCell>${o.totalPrice.toFixed(2)}</TableCell>
-                <TableCell>{o.orderStatus}</TableCell>
-
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => openAddressDialog(o)}
-                  >
-                    View Address
-                  </Button>
-                </TableCell>
-
-                <TableCell>
-                  {ns
-                    ? <Button
+          <TableBody>
+            {orders.map(o => {
+              const ns = calcNextStatus(o.orderStatus);
+              return (
+                <TableRow key={o.orderId} sx={{ '&:hover': { backgroundColor: "#1a1a1a" } }}>
+                  <TableCell sx={{ color: "#fff" }}>{o.orderId}</TableCell>
+                  <TableCell sx={{ color: "#fff" }}>${o.totalPrice.toFixed(2)}</TableCell>
+                  <TableCell sx={{ color: "#fff" }}>{o.orderStatus}</TableCell>
+                  <TableCell>
+                    <Button size="small" variant="outlined" onClick={() => openAddressDialog(o)}>
+                      View Address
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    {o.invoiceLink ? (
+                      <Button size="small" variant="outlined" onClick={() => window.open(o.invoiceLink, "_blank")}>
+                        View Invoice
+                      </Button>
+                    ) : (
+                      <Typography sx={{ color: "#888" }}>Not Available</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {ns ? (
+                      <Button
                         size="small"
                         variant="contained"
                         color="warning"
@@ -136,16 +130,17 @@ export default function ManageOrders() {
                       >
                         Change Order Status
                       </Button>
-                    : <Typography>Delivered</Typography>
-                  }
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                    ) : (
+                      <Typography sx={{ color: "#aaa" }}>Delivered</Typography>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Paper>
 
-      {/* Confirm Status Change Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>Confirm Status Change</DialogTitle>
         <DialogContent>
@@ -156,13 +151,10 @@ export default function ManageOrders() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={onConfirm}>
-            Yes, change
-          </Button>
+          <Button variant="contained" onClick={onConfirm}>Yes, change</Button>
         </DialogActions>
       </Dialog>
 
-      {/* View Address Dialog */}
       <Dialog open={addrDialogOpen} onClose={() => setAddrDialogOpen(false)}>
         <DialogTitle>Shipping Address</DialogTitle>
         <DialogContent>
@@ -176,9 +168,7 @@ export default function ManageOrders() {
               </Typography>
             </>
           ) : (
-            <Typography color="error">
-              No address information available.
-            </Typography>
+            <Typography color="error">No address information available.</Typography>
           )}
         </DialogContent>
         <DialogActions>
