@@ -55,7 +55,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get("http://localhost:8080/api/products/published")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/products/published`)
       .then((response) => {
         setProducts(response.data);
         setLoading(false);
@@ -285,22 +285,22 @@ export default function HomePage() {
                         color: "#1f1c66", fontWeight: "bold", mt: 1,
                         display: "flex", alignItems: "baseline"
                       }}>
-                      {(() => {
-                        // Eğer indirim uygulanmışsa discountedPrice, yoksa regular price
-                        const priceToShow = product.discounted
-                          ? product.discountedPrice
-                          : product.price;
+                        {(() => {
+                          // Eğer indirim uygulanmışsa discountedPrice, yoksa regular price
+                          const priceToShow = product.discounted
+                            ? product.discountedPrice
+                            : product.price;
 
-                        // priceToShow undefined olabilir, bu yüzden || 0 ile guard’lıyoruz
-                        const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
+                          // priceToShow undefined olabilir, bu yüzden || 0 ile guard’lıyoruz
+                          const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
 
-                        return (
-                          <>
-                            <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
-                            <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
-                          </>
-                        );
-                      })()}
+                          return (
+                            <>
+                              <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
+                              <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
+                            </>
+                          );
+                        })()}
                       </Typography>
                     </CardContent>
                   </CardActionArea>

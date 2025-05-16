@@ -22,7 +22,7 @@ import ProductDashboard from './pages/ProductDashboard/ProductDashboard';
 import NewProductForm from "./pages/ProductDashboard/NewProductForm";
 import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
 import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
-import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
+import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";
 import WishlistPage from "./pages/WishlistPage/WishlistPage";
 import { WishlistProvider } from "./context/WishlistContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
@@ -36,7 +36,7 @@ function App() {
       const existingId = localStorage.getItem("customerId");
       if (!existingId) {
         try {
-          const response = await axios.get("http://localhost:8080/api/customers/me", {
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/customers/me`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
             },
@@ -48,10 +48,10 @@ function App() {
         }
       }
     };
-  
+
     fetchCustomerId();
   }, []);
-  
+
 
   return (
     <WishlistProvider>

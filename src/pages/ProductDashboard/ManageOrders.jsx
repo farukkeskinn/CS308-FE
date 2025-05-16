@@ -18,23 +18,23 @@ import {
 } from "@mui/material";
 
 export default function ManageOrders() {
-  const [orders, setOrders]             = useState([]);
-  const [loading, setLoading]           = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Confirm‐status dialog state
-  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [currentStatus, setCurrentStatus]     = useState("");
-  const [nextStatus, setNextStatus]           = useState("");
+  const [currentStatus, setCurrentStatus] = useState("");
+  const [nextStatus, setNextStatus] = useState("");
 
   // Address‐view dialog state
-  const [addrDialogOpen, setAddrDialogOpen]   = useState(false);
-  const [addressData, setAddressData]         = useState(null);
+  const [addrDialogOpen, setAddrDialogOpen] = useState(false);
+  const [addressData, setAddressData] = useState(null);
 
   // load all orders
   const loadOrders = () => {
     setLoading(true);
-    axios.get("http://localhost:8080/api/orders")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/orders`)
       .then(res => setOrders(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -47,8 +47,8 @@ export default function ManageOrders() {
   // compute next in PROCESSING → IN_TRANSIT → DELIVERED
   const calcNextStatus = s =>
     s === "PROCESSING" ? "IN_TRANSIT"
-  : s === "IN_TRANSIT"  ? "DELIVERED"
-  : /* else */           null;
+      : s === "IN_TRANSIT" ? "DELIVERED"
+        : /* else */           null;
 
   const openConfirm = o => {
     const ns = calcNextStatus(o.orderStatus);
@@ -65,7 +65,7 @@ export default function ManageOrders() {
 
     axios
       .patch(
-        `http://localhost:8080/api/product-managers/orders/${selectedOrderId}/status`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/product-managers/orders/${selectedOrderId}/status`,
         null,
         { params: { status: nextStatus } }
       )
@@ -129,13 +129,13 @@ export default function ManageOrders() {
                 <TableCell>
                   {ns
                     ? <Button
-                        size="small"
-                        variant="contained"
-                        color="warning"
-                        onClick={() => openConfirm(o)}
-                      >
-                        Change Order Status
-                      </Button>
+                      size="small"
+                      variant="contained"
+                      color="warning"
+                      onClick={() => openConfirm(o)}
+                    >
+                      Change Order Status
+                    </Button>
                     : <Typography>Delivered</Typography>
                   }
                 </TableCell>

@@ -14,7 +14,7 @@ const ProductDashboard = () => {
 
   // Fetch products from the backend API
   useEffect(() => {
-    axios.get("http://localhost:8080/api/product-managers/products")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products`)
       .then(res => setProducts(res.data))
       .catch(err => console.error("Error fetching products:", err))
       .finally(() => setLoadingProducts(false));
@@ -24,7 +24,7 @@ const ProductDashboard = () => {
   const handleDelete = (productId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?");
     if (confirmDelete) {
-      axios.delete(`http://localhost:8080/api/product-managers/products/${productId}`)
+      axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${productId}`)
         .then(() => {
           setProducts(products.filter(product => product.productId !== productId));
         })
@@ -36,13 +36,13 @@ const ProductDashboard = () => {
   const handleUpdateStock = (product) => {
     const newQuantity = window.prompt("Update Stock:\nCurrent quantity: " + product.quantity + "\nEnter new quantity:");
     if (newQuantity !== null && newQuantity.trim() !== "" && !isNaN(newQuantity)) {
-      axios.patch(`http://localhost:8080/api/product-managers/products/${product.productId}/stock`, null, {
+      axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${product.productId}/stock`, null, {
         params: { quantity: newQuantity }
       })
-      .then(res => {
-        setProducts(products.map(p => (p.productId === product.productId ? res.data : p)));
-      })
-      .catch(err => console.error("Error updating stock:", err));
+        .then(res => {
+          setProducts(products.map(p => (p.productId === product.productId ? res.data : p)));
+        })
+        .catch(err => console.error("Error updating stock:", err));
     }
   };
 

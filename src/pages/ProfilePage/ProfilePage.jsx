@@ -16,7 +16,7 @@ export default function ProfilePage() {
     const jwtToken = localStorage.getItem("jwtToken");
 
     try {
-      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/customers/${customerId}`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
@@ -37,7 +37,7 @@ export default function ProfilePage() {
     const jwtToken = localStorage.getItem("jwtToken");
 
     try {
-      const response = await fetch(`http://localhost:8080/api/addresses/${addressId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/addresses/${addressId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${jwtToken}`,

@@ -27,7 +27,7 @@ const CategoryDashboard = () => {
   }, []);
 
   const fetchCategories = () => {
-    axios.get("http://localhost:8080/api/categories")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/categories`)
       .then((res) => {
         setCategories(res.data || []);
         setLoading(false);
@@ -52,7 +52,7 @@ const CategoryDashboard = () => {
       "Are you sure you want to delete this category?"
     );
     if (confirmDelete) {
-      axios.delete(`http://localhost:8080/api/categories/${categoryId}`)
+      axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/categories/${categoryId}`)
         .then(() => {
           //fetchCategories();
           window.location.reload();
@@ -69,7 +69,7 @@ const CategoryDashboard = () => {
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Category Management
       </Typography>
-      
+
       {/* New Category Action Button */}
       <Box mb={2}>
         <Button

@@ -14,13 +14,13 @@ import {
 
 export default function ReviewManagementDashboard() {
   const [reviews, setReviews] = useState([]);
-  const [names,   setNames]   = useState({});    // productId → product name
+  const [names, setNames] = useState({});    // productId → product name
   const [loading, setLoading] = useState(true);
 
   // 1) Load all pending reviews
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/reviews', { params: { status: 'pending' }})
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/reviews`, { params: { status: 'pending' } })
       .then(res => setReviews(res.data))
       .catch(err => {
         console.error(
@@ -40,15 +40,15 @@ export default function ReviewManagementDashboard() {
     Promise.all(
       ids.map(id =>
         axios
-          .get(`http://localhost:8080/api/product-managers/products/${id}/name`)
-          .then(r => [ id, r.data.name ])
+          .get(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${id}/name`)
+          .then(r => [id, r.data.name])
           .catch(err => {
             console.error(
               `❌ Failed to load name for product ${id}:`,
               err.config.method.toUpperCase(),
               err.config.url
             );
-            return [ id, 'Unknown' ];
+            return [id, 'Unknown'];
           })
       )
     ).then(pairs => setNames(Object.fromEntries(pairs)));
@@ -61,9 +61,9 @@ export default function ReviewManagementDashboard() {
 
     axios
       .patch(
-        `http://localhost:8080/api/reviews/${reviewId}/approval`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/reviews/${reviewId}/approval`,
         null,
-        { params: { status }}
+        { params: { status } }
       )
       .then(() => {
         // Remove the just‑handled review from state

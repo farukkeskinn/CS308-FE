@@ -109,7 +109,7 @@ export default function ShoppingCart() {
         // Get the proper productId based on item structure
         const productId = item.product ? item.product.productId : item.productId;
 
-        await fetch("http://localhost:8080/api/cart-management/add-item", {
+        await fetch("/api/cart-management/add-item", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -151,7 +151,7 @@ export default function ShoppingCart() {
     // Logged-in user - update backend
     if (jwtToken && customerId && item.shoppingCartItemId) {
       try {
-        await fetch("http://localhost:8080/api/cart-management/remove-item-quantity", {
+        await fetch("/api/cart-management/remove-item-quantity", {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -187,7 +187,7 @@ export default function ShoppingCart() {
     // Logged-in user - update backend
     if (jwtToken && customerId && removedItem?.shoppingCartItemId) {
       try {
-        await fetch(`http://localhost:8080/api/cart-management/remove-item/${removedItem.shoppingCartItemId}`, {
+        await fetch(`/api/cart-management/remove-item/${removedItem.shoppingCartItemId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -219,7 +219,7 @@ export default function ShoppingCart() {
 
     try {
       // Get cart ID
-      const cartRes = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+      const cartRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/cart-by-customer/${customerId}`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
@@ -234,7 +234,7 @@ export default function ShoppingCart() {
       const cartId = cart.cartId;
 
       // Clear cart on backend
-      await fetch(`http://localhost:8080/api/cart-management/clear-cart/${cartId}`, {
+      await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/clear-cart/${cartId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${jwtToken}`,

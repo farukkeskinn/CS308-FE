@@ -48,7 +48,7 @@ const NewProductForm = () => {
     });
     formData.append("category", new Blob([categoryJson], { type: 'application/json' }));
 
-    fetch("http://localhost:8080/api/product-managers/products", {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products`, {
       method: "POST",
       body: JSON.stringify({
         name: product.name,
@@ -98,7 +98,7 @@ const NewProductForm = () => {
         params.append("image_url", product.image_url);
         params.append("category.categoryId", product.categoryId);
 
-        axios.post("http://localhost:8080/api/product-managers/products", params, {
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products`, params, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }

@@ -57,7 +57,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!categoryId) return;
     axios
-      .get(`http://localhost:8080/api/categories/${categoryId}`)
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/categories/${categoryId}`)
       .then((response) => {
         setCategoryDetails(response.data);
         setCategoryName(response.data.categoryName);
@@ -71,7 +71,7 @@ export default function CategoryPage() {
     if (!categoryId) return;
 
     axios
-      .get(`http://localhost:8080/api/products/by-category/${categoryId}`)
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/products/by-category/${categoryId}`)
       .then((response) => {
         // Filter out products that aren't published
         const publishedProducts = response.data.content;
@@ -316,22 +316,22 @@ export default function CategoryPage() {
                           alignItems: "baseline",
                         }}
                       >
-                      {(() => {
-                        // İndirim uygulanmışsa discountedPrice, aksi halde normal price
-                        const priceToShow = product.discounted
-                          ? product.discountedPrice
-                          : product.price;
+                        {(() => {
+                          // İndirim uygulanmışsa discountedPrice, aksi halde normal price
+                          const priceToShow = product.discounted
+                            ? product.discountedPrice
+                            : product.price;
 
-                        // Eğer undefined/null gelirse 0’a düşsün
-                        const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
+                          // Eğer undefined/null gelirse 0’a düşsün
+                          const [dollars, cents] = (priceToShow || 0).toFixed(2).split(".");
 
-                        return (
-                          <>
-                            <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
-                            <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
-                          </>
-                        );
-                      })()}
+                          return (
+                            <>
+                              <span style={{ fontSize: "24px", fontWeight: 700 }}>${dollars}</span>
+                              <span style={{ fontSize: "14px", marginLeft: "2px" }}>.{cents}</span>
+                            </>
+                          );
+                        })()}
                       </Typography>
                     </CardContent>
                   </CardActionArea>

@@ -33,7 +33,7 @@ export default function RegisterPage() {
 
   const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
     try {
-      const response = await fetch("http://localhost:8080/api/cart-management/merge-guest-cart", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/merge-guest-cart`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,15 +47,15 @@ export default function RegisterPage() {
           })),
         }),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok && result.clearGuestCart) {
         localStorage.removeItem("shoppingCart");
         setCartItems([]);
         await fetchUserCart(customerId, jwtToken);
       }
-  
+
     } catch (err) {
       console.error("Merge işlemi başarısız:", err);
     }
@@ -81,7 +81,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -103,8 +103,8 @@ export default function RegisterPage() {
           await fetchUserCart(data.customerId, data.token);
         }
 
-          setMessage("Registration successful! Redirecting...");
-          setTimeout(() => navigate("/login"), 2000);
+        setMessage("Registration successful! Redirecting...");
+        setTimeout(() => navigate("/login"), 2000);
       } else {
         setErrors({ email: data.message || "Registration failed." });
       }

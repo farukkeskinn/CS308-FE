@@ -21,7 +21,7 @@ export default function OrderHistory() {
       try {
         const customerId = localStorage.getItem("customerId");
         const jwtToken = localStorage.getItem("jwtToken");
-        const response = await fetch(`http://localhost:8080/api/orders/by-customer/${customerId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/by-customer/${customerId}`, {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
           },
@@ -43,7 +43,7 @@ export default function OrderHistory() {
       const enriched = await Promise.all(
         selectedOrderItems.map(async (item) => {
           try {
-            const response = await fetch(`http://localhost:8080/api/products/${item.productId}`);
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/products/${item.productId}`);
             if (!response.ok) throw new Error("Failed to fetch product image");
             const product = await response.json();
             return { ...item, image: product.image_url };
@@ -65,7 +65,7 @@ export default function OrderHistory() {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
       const customerId = localStorage.getItem("customerId");
-      const response = await fetch(`http://localhost:8080/api/reviews/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/reviews/${customerId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,13 +99,13 @@ export default function OrderHistory() {
   const handleConfirmAction = async () => {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
-  
+
       let response;
       console.log("Confirm action:", confirmAction);
-  
+
       if (confirmAction?.type === "cancel") {
         // Cancel full order
-        const endpoint = `http://localhost:8080/api/orders/${confirmAction.orderId}/cancel`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/api/orders/${confirmAction.orderId}/cancel`;
         console.log("my endpoint", endpoint);
         response = await fetch(endpoint, {
           method: "POST",
@@ -116,7 +116,7 @@ export default function OrderHistory() {
       } else if (confirmAction?.type === "refund-item") {
         // Refund single item
         console.log("Refunding item:", confirmAction.orderItemId);
-        const endpoint = `http://localhost:8080/api/refunds/request`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/api/refunds/request`;
         console.log("my endpoint", endpoint);
         response = await fetch(endpoint, {
           method: "POST",
@@ -132,7 +132,7 @@ export default function OrderHistory() {
         });
       } else if (confirmAction?.type === "refund-all") {
         // Refund full order
-        const endpoint = `http://localhost:8080/api/refunds/request-all/${confirmAction.orderId}?reason=Siparişbeklentilerimikarşılamadı`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/api/refunds/request-all/${confirmAction.orderId}?reason=Siparişbeklentilerimikarşılamadı`;
         console.log("my endpoint", endpoint);
         console.log("confirmAction", confirmAction);
         response = await fetch(endpoint, {
@@ -144,17 +144,17 @@ export default function OrderHistory() {
       } else {
         throw new Error("Unsupported action type");
       }
-  
+
       if (!response.ok) throw new Error("Request failed");
-  
+
       alert(
         confirmAction?.type === "cancel"
           ? "Order successfully cancelled."
           : confirmAction?.type === "refund-item"
-          ? "Refund request submitted for item."
-          : "Full order refund submitted."
+            ? "Refund request submitted for item."
+            : "Full order refund submitted."
       );
-  
+
       // Optional: update UI state or re-fetch orders
     } catch (error) {
       console.error("Action failed:", error);
@@ -163,9 +163,9 @@ export default function OrderHistory() {
       setConfirmDialogOpen(false);
     }
   };
-  
-  
-  
+
+
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", py: 5, px: { xs: 2, md: 10 } }}>
       <Paper elevation={3} sx={{ backgroundColor: "white", p: 4, textAlign: "center", mb: 4 }}>
@@ -343,14 +343,14 @@ export default function OrderHistory() {
                             (oi) => oi.productId === item.productId
                           );
                           console.log("Matching Order Item:", matchingOrderItem);
-                          
+
                           setConfirmAction({
                             type: "refund-item",
                             orderId: parentOrder?.orderId,
                             orderItemId: matchingOrderItem?.productId, // ✅ proper access
                             reason: refundReason,
                           });
-                          
+
                           setConfirmDialogOpen(true);
                         }}
                       >
@@ -402,8 +402,8 @@ export default function OrderHistory() {
             {confirmAction?.type === "cancel"
               ? "cancel this order?"
               : confirmAction?.type === "refund-all"
-              ? "refund the entire order?"
-              : "refund this item?"}
+                ? "refund the entire order?"
+                : "refund this item?"}
           </Typography>
 
           {confirmAction?.type === "refund-item" && (
