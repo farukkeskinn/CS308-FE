@@ -18,7 +18,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Dark theme
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
@@ -72,6 +71,21 @@ const ProductDashboard = () => {
           setProducts(products.map((p) => (p.productId === product.productId ? res.data : p)));
         })
         .catch((err) => console.error("Error updating stock:", err));
+    }
+  };
+
+  const handleChangeCategory = (product) => {
+    const newCategoryId = window.prompt("Enter new category ID:");
+    if (newCategoryId !== null && newCategoryId.trim() !== "" && !isNaN(newCategoryId)) {
+      axios
+        .put(`http://localhost:8080/api/products/${product.productId}/category/${newCategoryId}`)
+        .then((res) => {
+          setProducts(products.map((p) => (p.productId === product.productId ? res.data : p)));
+        })
+        .catch((err) => {
+          console.error("Error updating category:", err);
+          alert("Failed to change category.");
+        });
     }
   };
 
@@ -147,8 +161,17 @@ const ProductDashboard = () => {
                         color="secondary"
                         onClick={() => handleUpdateStock(product)}
                         size="small"
+                        sx={{ mr: 1 }}
                       >
                         Update Stock
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleChangeCategory(product)}
+                        size="small"
+                      >
+                        Change Category
                       </Button>
                     </TableCell>
                   </TableRow>
