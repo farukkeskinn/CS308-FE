@@ -13,7 +13,6 @@ const NewProductForm = () => {
     warranty_status: "",
     distributor: "",
     image_url: "",
-    categoryId: "",
   });
 
   const [error, setError] = useState("");
@@ -21,7 +20,7 @@ const NewProductForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ["cost", "quantity", "warranty_status", "categoryId"];
+    const numericFields = ["cost", "quantity", "warranty_status"];
     if (numericFields.includes(name)) {
       if (/^\d*$/.test(value)) {
         setProduct({ ...product, [name]: value });
@@ -38,7 +37,6 @@ const NewProductForm = () => {
     if (product.cost && isNaN(product.cost)) return setError("Cost must be a valid number.");
     if (product.quantity && isNaN(product.quantity)) return setError("Quantity must be a valid number.");
     if (product.warranty_status && isNaN(product.warranty_status)) return setError("Warranty must be a valid number.");
-    if (product.categoryId && isNaN(product.categoryId)) return setError("Category ID must be a valid number.");
 
     fetch("http://localhost:8080/api/product-managers/products", {
       method: "POST",
@@ -52,10 +50,7 @@ const NewProductForm = () => {
         quantity: product.quantity ? parseInt(product.quantity) : null,
         warranty_status: product.warranty_status ? parseInt(product.warranty_status) : null,
         distributor: product.distributor,
-        image_url: product.image_url,
-        category: {
-          categoryId: product.categoryId ? parseInt(product.categoryId) : null
-        }
+        image_url: product.image_url
       })
     })
       .then(res => {
@@ -69,14 +64,33 @@ const NewProductForm = () => {
       .catch(err => setError(`Error creating product: ${err.message}`));
   };
 
-  // ✅ Siyah zemin ve beyaz yazı için ortak stil
   const darkFieldStyle = {
-    backgroundColor: "#000",
-    input: { color: "#fff" },
-    textarea: { color: "#fff" }, // 👈 Bu satır textarea için
-    label: { color: "#fff" },
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: "#444" },
-    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: "#888" },
+    '& .MuiInputBase-root': {
+      backgroundColor: '#1e1e1e !important',
+      color: '#fff',
+    },
+    '& input': {
+      backgroundColor: '#1e1e1e !important',
+      color: '#fff',
+    },
+    '& .MuiInputBase-inputMultiline': {
+      backgroundColor: '#1e1e1e !important',
+      color: '#fff',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: '#444',
+      },
+      '&:hover fieldset': {
+        borderColor: '#888',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#aaa',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: '#ccc',
+    },
   };
 
   return (
@@ -107,7 +121,6 @@ const NewProductForm = () => {
         <TextField label="Warranty (months)" name="warranty_status" value={product.warranty_status} onChange={handleChange} fullWidth margin="normal" sx={darkFieldStyle} />
         <TextField label="Distributor" name="distributor" value={product.distributor} onChange={handleChange} fullWidth margin="normal" sx={darkFieldStyle} />
         <TextField label="Image URL" name="image_url" value={product.image_url} onChange={handleChange} fullWidth margin="normal" sx={darkFieldStyle} />
-        <TextField label="Category ID" name="categoryId" value={product.categoryId} onChange={handleChange} fullWidth margin="normal" required sx={darkFieldStyle} />
 
         <Button variant="contained" color="primary" type="submit" sx={{ mt: 2 }}>
           Create Product
