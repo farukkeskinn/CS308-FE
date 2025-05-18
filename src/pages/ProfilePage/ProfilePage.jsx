@@ -5,11 +5,24 @@ import {
   Avatar,
   Divider,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+
+
 export default function ProfilePage() {
   const [customer, setCustomer] = useState(null);
+  const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const fetchProfile = async () => {
     const customerId = localStorage.getItem("customerId");
@@ -32,6 +45,50 @@ export default function ProfilePage() {
       console.error("Error:", error);
     }
   };
+
+  const handlePasswordChange = async () => {
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    setError("Please fill out all fields.");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    setError("New passwords do not match.");
+    return;
+  }
+
+  try {
+    const jwtToken = localStorage.getItem("jwtToken");
+    const customerId = localStorage.getItem("customerId");
+
+    const response = await fetch(`http://localhost:8080/api/customers/${customerId}/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+      }),
+    });
+
+    if (response.ok) {
+      setOpenPasswordDialog(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setError("");
+      alert("Password updated successfully!");
+    } else if (response.status === 401) {
+      setError("Current password is incorrect.");
+    } else {
+      setError("Failed to update password.");
+    }
+  } catch (err) {
+    setError("An error occurred.");
+  }
+};
 
   const handleDeleteAddress = async (addressId) => {
     const jwtToken = localStorage.getItem("jwtToken");
@@ -103,6 +160,12 @@ export default function ProfilePage() {
               alt="Profile"
               sx={{ width: 160, height: 160 }}
             />
+            <Typography
+              variant="body2"
+              sx={{ mt: 2, color: "gray", fontStyle: "italic", textAlign: "center" }}
+            >
+              Tax ID: {customer.customerId}
+            </Typography>
           </Box>
 
           <Box
@@ -128,6 +191,21 @@ export default function ProfilePage() {
               Email
             </Typography>
             <Typography mb={2}>{customer.email}</Typography>
+
+            <Divider />
+
+            <Typography variant="h6" fontWeight="bold" mt={2} color="#1f1c66">
+              Password
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Typography sx={{ fontFamily: "monospace", letterSpacing: 2 }}>********</Typography>
+              <IconButton
+                onClick={() => setOpenPasswordDialog(true)}
+                sx={{ color: "red", fontWeight: "bold" }}
+              >
+                Change Password
+              </IconButton>
+            </Box>
 
             <Divider />
 
@@ -176,6 +254,42 @@ export default function ProfilePage() {
           </Box>
         </Box>
       </Box>
+
+      <Dialog open={openPasswordDialog} onClose={() => setOpenPasswordDialog(false)} fullWidth>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <TextField
+            label="Current Password"
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="New Password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Confirm New Password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            fullWidth
+          />
+          {error && (
+            <Typography sx={{ color: "red", fontSize: "0.9rem" }}>{error}</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenPasswordDialog(false)}>Cancel</Button>
+          <Button onClick={handlePasswordChange} variant="contained" color="success">
+            Confirm Password
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Box
         component="footer"
