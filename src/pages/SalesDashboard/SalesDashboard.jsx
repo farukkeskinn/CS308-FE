@@ -23,7 +23,7 @@ import {
   Grid
 } from "@mui/material";
 import axios from "axios";
-import { green, pink } from '@mui/material/colors';
+import { green, pink,blue, yellow } from '@mui/material/colors';
 import Checkbox from "@mui/material/Checkbox";
 import {
   ResponsiveContainer,
@@ -78,8 +78,8 @@ export default function SalesDashboard() {
   const [selectedForDiscount, setSelectedForDiscount] = useState({});
   const [discountRate, setDiscountRate] = useState("");
   const [loading, setLoading] = useState(true);
-
-
+  const [pendingRefunds, setPendingRefunds] = useState([]);
+  const [showRefundDialog, setShowRefundDialog] = useState(false);
   const [unpublishedProducts, setUnpublishedProducts] = useState([]);
   const [showUnpublishedDialog, setShowUnpublishedDialog] = useState(false);
   const [priceInputs, setPriceInputs] = useState({});
@@ -263,6 +263,32 @@ export default function SalesDashboard() {
             setDiscountRate("");
             setSelectedForDiscount({});
           };
+    const fetchPendingRefunds = async () => {
+        try {
+          const res = await axios.get(
+            "http://localhost:8080/api/sales-managers/refunds/pending"
+          );
+          setPendingRefunds(res.data);
+          setShowRefundDialog(true);
+        } catch (e) {
+          console.error("Pending refunds fetch failed:", e);
+        }
+      };
+
+    const handleProcessRefund = async (refundId, decision) => {
+        try {
+          await axios.post(
+            `http://localhost:8080/api/sales-managers/refunds/${refundId}/process`,
+            null,
+            { params: { decision } }
+          );
+          // listeden çıkar
+          setPendingRefunds(prev => prev.filter(r => r.refundId !== refundId));
+        } catch (e) {
+          console.error(`Refund ${decision} failed for ${refundId}:`, e);
+          alert("İşlem başarısız.");
+        }
+      };
             
 
 
@@ -351,6 +377,14 @@ export default function SalesDashboard() {
          sx={{ backgroundColor: 'green', '&:hover': { backgroundColor: 'darkgreen' } }} 
          onClick={fetchPublished}>
           Apply Discount
+        </Button>
+        <Button variant="contained" 
+          sx={{
+                backgroundColor: yellow[500],
+                '&:hover': { backgroundColor: yellow[700] }
+       }}
+        onClick={fetchPendingRefunds}>
+          Refund Requests
         </Button>
       </Stack>
 
@@ -639,6 +673,64 @@ export default function SalesDashboard() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Refund Management Dialog */}
+      <Dialog
+        open={showRefundDialog}
+        onClose={() => setShowRefundDialog(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Refund Management</DialogTitle>
+        <DialogContent>
+          {pendingRefunds.length === 0 ? (
+            <Typography>No pending refunds.</Typography>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Refund ID</TableCell>
+                    <TableCell align="right">Refund Amount (₺)</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {pendingRefunds.map(r => (
+                    <TableRow key={r.refundId}>
+                        <TableCell>{r.refundId}</TableCell>
+                        <TableCell align="right">
+                           ${(r.refundAmount ?? 0).toFixed(2)}
+                        </TableCell>
+                        <TableCell>{r.refundStatus}</TableCell>
+                        <TableCell>
+                        <Button
+                          size="small"
+                          color="success"
+                          onClick={() => handleProcessRefund(r.refundId, "APPROVE")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => handleProcessRefund(r.refundId, "REJECT")}
+                        >
+                          Reject
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowRefundDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
  
     </Box>
     </ThemeProvider>
