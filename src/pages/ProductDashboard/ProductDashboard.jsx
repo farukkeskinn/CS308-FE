@@ -14,6 +14,8 @@ import {
   CssBaseline,
   createTheme,
   ThemeProvider,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -38,6 +40,9 @@ const darkTheme = createTheme({
 const ProductDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +53,12 @@ const ProductDashboard = () => {
       .finally(() => setLoadingProducts(false));
   }, []);
 
+  const showSnackbar = (message, severity = "info") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const handleDelete = (productId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?");
     if (confirmDelete) {
@@ -55,8 +66,12 @@ const ProductDashboard = () => {
         .delete(`http://localhost:8080/api/product-managers/products/${productId}`)
         .then(() => {
           setProducts(products.filter((p) => p.productId !== productId));
+          showSnackbar("Product deleted successfully", "success");
         })
-        .catch((err) => console.error("Error deleting product:", err));
+        .catch((err) => {
+          console.error("Error deleting product:", err);
+          showSnackbar("Failed to delete product", "error");
+        });
     }
   };
 
@@ -69,23 +84,30 @@ const ProductDashboard = () => {
         })
         .then((res) => {
           setProducts(products.map((p) => (p.productId === product.productId ? res.data : p)));
+          showSnackbar("Stock updated successfully", "success");
         })
-        .catch((err) => console.error("Error updating stock:", err));
+        .catch((err) => {
+          console.error("Error updating stock:", err);
+          showSnackbar("Failed to update stock", "error");
+        });
     }
   };
 
   const handleChangeCategory = (product) => {
-    const newCategoryId = window.prompt("Enter new category ID:");
-    if (newCategoryId !== null && newCategoryId.trim() !== "" && !isNaN(newCategoryId)) {
+    const newCategoryName = window.prompt("Enter new category name:");
+    if (newCategoryName && newCategoryName.trim() !== "") {
       axios
-        .put(`http://localhost:8080/api/products/${product.productId}/category/${newCategoryId}`)
+        .put(`http://localhost:8080/api/products/${product.productId}/category/name/${newCategoryName}`)
         .then((res) => {
           setProducts(products.map((p) => (p.productId === product.productId ? res.data : p)));
+          showSnackbar("Category updated successfully!", "success");
         })
         .catch((err) => {
           console.error("Error updating category:", err);
-          alert("Failed to change category.");
+          showSnackbar("Invalid category name or error occurred.", "error");
         });
+    } else {
+      showSnackbar("Category name cannot be empty.", "warning");
     }
   };
 
@@ -180,6 +202,23 @@ const ProductDashboard = () => {
             </Table>
           </TableContainer>
         )}
+
+        {/* Snackbar */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );
