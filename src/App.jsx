@@ -27,6 +27,7 @@ import WishlistPage from "./pages/WishlistPage/WishlistPage";
 import { WishlistProvider } from "./context/WishlistContext";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import ManageOrders from "./pages/ProductDashboard/ManageOrders";
+import DeliveredOrders from "./pages/ProductDashboard/DeliveredOrders";
 
 
 
@@ -82,6 +83,8 @@ function App() {
                     <Route path="/wishlist" element={<WishlistPage />} />
                     <Route path="/productdashboard/manage-orders" element={<ManageOrders />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/productdashboard/deliveries" element={<DeliveredOrders />} />
+                  
                   </Routes>
                 </>
               }
