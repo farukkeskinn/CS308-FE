@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
   // 🔁 Move fetchUserCart here:
   const fetchUserCart = async (customerId, jwtToken) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/cart-by-customer/${customerId}`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
@@ -51,32 +51,34 @@ export const CartProvider = ({ children }) => {
 
       if (result.shoppingCartItems && Array.isArray(result.shoppingCartItems)) {
         const formattedCart = result.shoppingCartItems.map(item => {
+          // Add null checks for all nested properties
+          const product = item.product || {};
+          const category = product.category || {};
+
           const formattedItem = {
-            product: item.product,
-            productId: item.product.productId,
-            name: item.product.name,
-            model: item.product.model,
-            description: item.product.description,
-            distributor: item.product.distributor,
-            categoryName: item.product.category.categoryName,
-            categoryId: item.product.category.categoryId,
-            itemSold: item.product.itemSold,
-            price: item.product.price,
-            cost: item.product.cost,
-            stock: item.product.stock,
-            image_url: item.product.image_url,
-            serialNumber: item.product.serialNumber,
-            warrantyStatus: item.product.warrantyStatus,
-
-
-            quantity: item.quantity,
-            shoppingCartItemId: item.shoppingCartItemId, // fix: use snake_case key from backend
+            product: product,
+            productId: product.productId || "",
+            name: product.name || "",
+            model: product.model || "",
+            description: product.description || "",
+            distributor: product.distributor || "",
+            // Add null checks for category
+            categoryName: category.categoryName || "Uncategorized",
+            categoryId: category.categoryId || 0,
+            itemSold: product.itemSold || 0,
+            price: product.price || 0,
+            cost: product.cost || 0,
+            stock: product.stock || 0,
+            image_url: product.image_url || "",
+            serialNumber: product.serialNumber || "",
+            warrantyStatus: product.warrantyStatus || 0,
+            quantity: item.quantity || 1,
+            shoppingCartItemId: item.shoppingCartItemId || "",
           };
-          console.log("🛒 Formatted Cart Item:", formattedItem); // Log each item
+          console.log("🛒 Formatted Cart Item:", formattedItem);
 
           return formattedItem;
         });
-
 
         setCartItems(formattedCart);
         localStorage.setItem("shoppingCart", JSON.stringify(formattedCart));
@@ -92,11 +94,11 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product, quantity = 1) => {
     const jwtToken = localStorage.getItem("jwtToken");
     const customerId = localStorage.getItem("customerId");
-  
+
     if (!jwtToken || !customerId) {
       const updatedCart = [...cartItems];
       const index = updatedCart.findIndex((item) => item.productId === product.productId);
-  
+
       if (index > -1) {
         // 🔥 Check if adding would exceed stock
         if (updatedCart[index].quantity + quantity > product.stock) {
@@ -112,11 +114,11 @@ export const CartProvider = ({ children }) => {
         }
         updatedCart.push({ ...product, quantity });
       }
-  
+
       setCartItems(updatedCart);
     } else {
       try {
-        const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/add-item`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -128,9 +130,9 @@ export const CartProvider = ({ children }) => {
             quantity,
           }),
         });
-  
+
         const result = await response.json();
-  
+
         if (response.ok) {
           if (result.message === "There is no enough stock") {
             alert("There is no enough stock");
@@ -145,7 +147,7 @@ export const CartProvider = ({ children }) => {
       }
     }
   };
-  
+
 
 
   return (

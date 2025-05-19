@@ -11,14 +11,16 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const { refreshWishlist } = useWishlist();
   const [emailError] = useState("");
-  const [passwordError ] = useState("");
+  const [passwordError] = useState("");
   const [loginError, setLoginError] = useState("");
   const { setCartItems, fetchUserCart } = useCartContext();
   const navigate = useNavigate();
@@ -33,73 +35,74 @@ export default function LoginPage() {
   };
 
 
-const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
-  try {
-    const response = await fetch("http://localhost:8080/api/cart-management/merge-guest-cart", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-      body: JSON.stringify({
-        customerId,
-        guestItems: guestCart.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-      }),
-    });
+  const mergeGuestCart = async (customerId, jwtToken, guestCart) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/merge-guest-cart`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          customerId,
+          guestItems: guestCart.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (response.ok && result.clearGuestCart) {
-      localStorage.removeItem("shoppingCart");
-      setCartItems([]);
-      await fetchUserCart(customerId, jwtToken);
-    }
-
-  } catch (err) {
-    console.error("Merge işlemi başarısız:", err);
-  }
-};
-
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoginError(false);
-
-  try {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-    console.log("Login response data:", data);
-
-    if (response.ok) {
-      localStorage.setItem("jwtToken", data.token);
-      localStorage.setItem("customerId", data.customerId);
-      localStorage.setItem("role", data.role);
-      console.log("the role is", data.role);
-
-      const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
-
-      if (guestCart.length > 0) {
-        await mergeGuestCart(data.customerId, data.token, guestCart);
-      } else {
-        await fetchUserCart(data.customerId, data.token);
+      if (response.ok && result.clearGuestCart) {
+        localStorage.removeItem("shoppingCart");
+        setCartItems([]);
+        await fetchUserCart(customerId, jwtToken);
       }
 
-      navigate("/");
-    } else {
+    } catch (err) {
+      console.error("Merge işlemi başarısız:", err);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError(false);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log("Login response data:", data);
+
+      if (response.ok) {
+        localStorage.setItem("jwtToken", data.token);
+        localStorage.setItem("customerId", data.customerId);
+        localStorage.setItem("role", data.role);
+        console.log("the role is", data.role);
+
+        const guestCart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+        if (guestCart.length > 0) {
+          await mergeGuestCart(data.customerId, data.token, guestCart);
+        } else {
+          await fetchUserCart(data.customerId, data.token);
+        }
+
+        navigate("/");
+        refreshWishlist();
+      } else {
+        setLoginError(true);
+      }
+    } catch (error) {
+      console.error("Login hatası:", error);
       setLoginError(true);
     }
-  } catch (error) {
-    console.error("Login hatası:", error);
-    setLoginError(true);
-  }
-};
+  };
 
 
   return (

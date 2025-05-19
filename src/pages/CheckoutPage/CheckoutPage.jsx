@@ -157,7 +157,7 @@ export default function Checkout() {
     try {
       const token = localStorage.getItem("jwtToken");
 
-      const response = await fetch("http://localhost:8080/api/payments/checkout", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/payments/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -22,7 +22,13 @@ import ProductDashboard from './pages/ProductDashboard/ProductDashboard';
 import NewProductForm from "./pages/ProductDashboard/NewProductForm";
 import NewCategoryForm from "./pages/ProductDashboard/NewCategoryForm";
 import CategoryDashboard from "./pages/ProductDashboard/CategoryDashboard";
-import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";  
+import ReviewManagementDashboard from "./pages/ProductDashboard/ReviewManagementDashboard";
+import WishlistPage from "./pages/WishlistPage/WishlistPage";
+import { WishlistProvider } from "./context/WishlistContext";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import ManageOrders from "./pages/ProductDashboard/ManageOrders";
+import DeliveredOrders from "./pages/ProductDashboard/DeliveredOrders";
+
 
 
 function App() {
@@ -31,7 +37,7 @@ function App() {
       const existingId = localStorage.getItem("customerId");
       if (!existingId) {
         try {
-          const response = await axios.get("http://localhost:8080/api/customers/me", {
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/customers/me`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
             },
@@ -43,45 +49,52 @@ function App() {
         }
       }
     };
-  
+
     fetchCustomerId();
   }, []);
-  
+
 
   return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar />
-                <Routes>
-                  <Route path="/" element={<Homepage />} />
-                  <Route path="/product/:productId" element={<Productpage />} />
-                  <Route path="/category/:categoryId" element={<CategoryPage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/cart" element={<ShoppingCart />} />
-                  <Route path="/orderpage" element={<OrderHistory />} />
-                  <Route path="/orderpage/:orderId" element={<OrderHistory />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/thank-you" element={<ThankYouPage />} />
-                  <Route path="/salesdashboard" element={<SalesDashboard />} />
-                  <Route path="/productdashboard" element={<ProductDashboard />} />
-                  <Route path="/productdashboard/new-product" element={<NewProductForm />} />
-                  <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
-                  <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
-                  <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
-                </Routes>
-              </>
-            }
-          />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </Router>
-    </CartProvider>
+    <WishlistProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar />
+                  <Routes>
+                    <Route path="/" element={<Homepage />} />
+                    <Route path="/product/:productId" element={<Productpage />} />
+                    <Route path="/category/:categoryId" element={<CategoryPage />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/cart" element={<ShoppingCart />} />
+                    <Route path="/orderpage" element={<OrderHistory />} />
+                    <Route path="/orderpage/:orderId" element={<OrderHistory />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/thank-you" element={<ThankYouPage />} />
+                    <Route path="/salesdashboard" element={<SalesDashboard />} />
+                    <Route path="/productdashboard" element={<ProductDashboard />} />
+                    <Route path="/productdashboard/new-product" element={<NewProductForm />} />
+                    <Route path="/productdashboard/new-category" element={<NewCategoryForm />} />
+                    <Route path="/productdashboard/categories" element={<CategoryDashboard />} />
+                    <Route path="/productdashboard/reviews" element={<ReviewManagementDashboard />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/productdashboard/manage-orders" element={<ManageOrders />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/productdashboard/deliveries" element={<DeliveredOrders />} />
+
+                  </Routes>
+                </>
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </Router>
+      </CartProvider>
+    </WishlistProvider>
   );
 }
 

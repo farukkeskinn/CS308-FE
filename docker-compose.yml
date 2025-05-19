@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: .
+    container_name: frontend-service
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    image: cs308-backend-local   # ✅ Backend local image
+    container_name: backend-service
+    ports:
+      - "8080:8080"
