@@ -117,7 +117,21 @@ export default function ProfilePage() {
 
   if (!customer) return <p>Loading profile...</p>;
 
-  const addresses = customer.addresses || [];
+  const addressList = (() => {
+    const uniqueAddresses = [];
+    const seen = new Set();
+
+    customer.orders?.forEach(order => {
+      const addr = order.shippingAddress;
+      const key = `${addr?.addressName}-${addr?.addressLine}`;
+      if (addr && !seen.has(key)) {
+        uniqueAddresses.push(addr);
+        seen.add(key);
+      }
+    });
+
+    return uniqueAddresses;
+  })();
 
   return (
     <Box
@@ -213,44 +227,39 @@ export default function ProfilePage() {
               Addresses
             </Typography>
 
-            {addresses.length === 0 && (
+            {addressList.length === 0 && (
               <Typography sx={{ mt: 2, fontStyle: "italic", color: "gray" }}>
                 No address available.
               </Typography>
             )}
 
-            {[0, 1, 2].map((index) => {
-              const address = addresses[index];
-              if (!address) return null;
+            {addressList.map((address, index) => (
+              <Box
+                key={index}
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 2,
+                  backgroundColor: "#f9f9f9",
+                  position: "relative",
+                }}
+              >
+                <Typography fontWeight="bold">Address {index + 1}</Typography>
+                <Typography>{address.addressName}</Typography>
+                <Typography sx={{ fontSize: "0.9rem", opacity: 0.8 }}>
+                  {address.addressLine}
+                </Typography>
 
-              return (
-                <Box
-                  key={index}
-                  sx={{
-                    mt: 2,
-                    p: 2,
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 2,
-                    backgroundColor: "#f9f9f9",
-                    position: "relative",
-                  }}
+                <IconButton
+                  size="small"
+                  sx={{ position: "absolute", top: 8, right: 8 }}
+                  onClick={() => handleDeleteAddress(address.addressId)}
                 >
-                  <Typography fontWeight="bold">Address {index + 1}</Typography>
-                  <Typography>{address.addressName}</Typography>
-                  <Typography sx={{ fontSize: "0.9rem", opacity: 0.8 }}>
-                    {address.addressLine}
-                  </Typography>
-
-                  <IconButton
-                    size="small"
-                    sx={{ position: "absolute", top: 8, right: 8 }}
-                    onClick={() => handleDeleteAddress(address.addressId)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              );
-            })}
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            ))}
           </Box>
         </Box>
       </Box>

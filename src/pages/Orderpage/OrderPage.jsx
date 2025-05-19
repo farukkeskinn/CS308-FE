@@ -90,12 +90,6 @@ export default function OrderHistory() {
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      alert("Order ID copied to clipboard!");
-    });
-  };
-
   const handleConfirmAction = async () => {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
@@ -187,14 +181,8 @@ export default function OrderHistory() {
               {orders.map((order, index) => (
                 <tr key={order.orderId}>
                   <th scope="row">{index + 1}</th>
-                  <td>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => copyToClipboard(order.orderId)}
-                    >
-                      Copy ID
-                    </Button>
+                  <td style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
+                    {order.orderId}
                   </td>
                   <td>{new Date(order.orderDate).toLocaleString()}</td>
                   <td>${order.totalPrice.toFixed(2)}</td>

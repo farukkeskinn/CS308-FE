@@ -112,13 +112,25 @@ export default function ManageOrders() {
                     </Button>
                   </TableCell>
                   <TableCell>
-                    {o.invoiceLink ? (
-                      <Button size="small" variant="outlined" onClick={() => window.open(o.invoiceLink, "_blank")}>
-                        View Invoice
-                      </Button>
-                    ) : (
-                      <Typography sx={{ color: "#888" }}>Not Available</Typography>
-                    )}
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${o.orderId}/invoice-url`);
+                          const data = await res.json();
+                          if (data.url) {
+                            window.open(data.url, "_blank");
+                          } else {
+                            alert("Invoice URL is not available");
+                          }
+                        } catch (e) {
+                          alert("Could not open invoice");
+                        }
+                      }}
+                    >
+                      View Invoice
+                    </Button>
                   </TableCell>
                   <TableCell>
                     {ns ? (
