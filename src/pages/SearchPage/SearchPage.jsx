@@ -59,7 +59,7 @@ export default function SearchPage() {
 
     setLoading(true);
     axios
-      .get("http://localhost:8080/api/products/published")
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/products/published`)
       .then((res) => {
         // Filter for products that match search AND are published with prices set
         const filtered = res.data.filter(

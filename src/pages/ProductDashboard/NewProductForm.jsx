@@ -38,7 +38,7 @@ const NewProductForm = () => {
     if (product.quantity && isNaN(product.quantity)) return setError("Quantity must be a valid number.");
     if (product.warranty_status && isNaN(product.warranty_status)) return setError("Warranty must be a valid number.");
 
-    fetch("http://localhost:8080/api/product-managers/products", {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

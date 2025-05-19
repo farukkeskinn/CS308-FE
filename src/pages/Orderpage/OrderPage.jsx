@@ -21,7 +21,7 @@ export default function OrderHistory() {
       try {
         const customerId = localStorage.getItem("customerId");
         const jwtToken = localStorage.getItem("jwtToken");
-        const response = await fetch(`http://localhost:8080/api/orders/by-customer/${customerId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/by-customer/${customerId}`, {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
           },
@@ -43,7 +43,7 @@ export default function OrderHistory() {
       const enriched = await Promise.all(
         selectedOrderItems.map(async (item) => {
           try {
-            const response = await fetch(`http://localhost:8080/api/products/${item.productId}`);
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/products/${item.productId}`);
             if (!response.ok) throw new Error("Failed to fetch product image");
             const product = await response.json();
             return { ...item, image: product.image_url };
@@ -65,7 +65,7 @@ export default function OrderHistory() {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
       const customerId = localStorage.getItem("customerId");
-      const response = await fetch(`http://localhost:8080/api/reviews/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/reviews/${customerId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,40 +99,23 @@ export default function OrderHistory() {
   const handleConfirmAction = async () => {
     try {
       const jwtToken = localStorage.getItem("jwtToken");
-  
+
       let response;
       console.log("Confirm action:", confirmAction);
-  
+
       if (confirmAction?.type === "cancel") {
         // Cancel full order
-        const endpoint = `http://localhost:8080/api/orders/${confirmAction.orderId}/cancel`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/api/orders/${confirmAction.orderId}/cancel`;
         console.log("my endpoint", endpoint);
         response = await fetch(endpoint, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
           },
-        });
-      } else if (confirmAction?.type === "refund-item") {
-        // Refund single item
-        console.log("Refunding item:", confirmAction);
-        const endpoint = `http://localhost:8080/api/refunds/request`;
-        console.log("my endpoint", endpoint);
-        response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${jwtToken}`,
-          },
-          body: JSON.stringify({
-            orderId: confirmAction.orderId,
-            orderItemId: confirmAction.orderItemId,
-            reason: refundReason,
-          }),
         });
       } else if (confirmAction?.type === "refund-all") {
         // Refund full order
-        const endpoint = `http://localhost:8080/api/refunds/request-all/${confirmAction.orderId}?reason=Siparişbeklentilerimikarşılamadı`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/api/refunds/request-all/${confirmAction.orderId}`;
         console.log("my endpoint", endpoint);
         console.log("confirmAction", confirmAction);
         response = await fetch(endpoint, {
@@ -144,17 +127,17 @@ export default function OrderHistory() {
       } else {
         throw new Error("Unsupported action type");
       }
-  
+
       if (!response.ok) throw new Error("Request failed");
-  
+
       alert(
         confirmAction?.type === "cancel"
           ? "Order successfully cancelled."
           : confirmAction?.type === "refund-item"
-          ? "Refund request submitted for item."
-          : "Full order refund submitted."
+            ? "Refund request submitted for item."
+            : "Full order refund submitted."
       );
-  
+
       // Optional: update UI state or re-fetch orders
     } catch (error) {
       console.error("Action failed:", error);
@@ -163,9 +146,9 @@ export default function OrderHistory() {
       setConfirmDialogOpen(false);
     }
   };
-  
-  
-  
+
+
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", py: 5, px: { xs: 2, md: 10 } }}>
       <Paper elevation={3} sx={{ backgroundColor: "white", p: 4, textAlign: "center", mb: 4 }}>
@@ -220,15 +203,15 @@ export default function OrderHistory() {
                   <td>
                     {order.invoiceLink?.startsWith("http")
                       ? (
-                          <a
-                            href={order.invoiceLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View Invoice
-                          </a>
-                        )
-                      : "Not Available" }
+                        <a
+                          href={order.invoiceLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View Invoice
+                        </a>
+                      )
+                      : "Not Available"}
                   </td>
                   <td>
                     <Button
@@ -332,32 +315,6 @@ export default function OrderHistory() {
                     >
                       Review
                     </Button>
-
-                    {isRefundEligible && (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        sx={{
-                          minWidth: 130,
-                          textTransform: "none",
-                        }}
-                        onClick={() => {
-                          console.log("Item for refund:", item);
-
-                          setConfirmAction({
-                            type: "refund-item",
-                            orderId: parentOrder?.orderId,
-                            orderItemId: item.productId, // ✅ proper access
-                            reason: refundReason,
-                          });
-                          
-                          setConfirmDialogOpen(true);
-                        }}
-                      >
-                        Refund Item
-                      </Button>
-                    )}
                   </Box>
                 </Grid>
               </Grid>
@@ -402,22 +359,8 @@ export default function OrderHistory() {
             Are you sure you want to{" "}
             {confirmAction?.type === "cancel"
               ? "cancel this order?"
-              : confirmAction?.type === "refund-all"
-              ? "refund the entire order?"
-              : "refund this item?"}
+              : "refund the order?"}
           </Typography>
-
-          {confirmAction?.type === "refund-item" && (
-            <TextField
-              fullWidth
-              multiline
-              minRows={2}
-              label="Reason for refund"
-              value={refundReason}
-              onChange={(e) => setRefundReason(e.target.value)}
-              sx={{ mt: 2 }}
-            />
-          )}
         </DialogContent>
 
         <DialogActions>

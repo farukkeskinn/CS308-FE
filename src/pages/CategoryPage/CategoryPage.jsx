@@ -58,7 +58,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!categoryId) return;
     axios
-      .get(`http://localhost:8080/api/categories/${categoryId}`)
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/categories/${categoryId}`)
       .then((response) => {
         setCategoryDetails(response.data);
         setCategoryName(response.data.categoryName);
@@ -72,7 +72,7 @@ export default function CategoryPage() {
     if (!categoryId) return;
 
     axios
-      .get(`http://localhost:8080/api/products/by-category/${categoryId}`)
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/products/by-category/${categoryId}`)
       .then((response) => {
         // Filter out products that aren't published
         const publishedProducts = response.data.content;
@@ -258,7 +258,7 @@ export default function CategoryPage() {
             filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
                 <ProductCard product={product} />
-  
+
               </Grid>
             ))
           ) : (

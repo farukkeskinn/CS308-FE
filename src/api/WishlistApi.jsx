@@ -4,7 +4,7 @@ import axios from "axios";
 /* ------------------------------------------------------------------
    Ortak ayarlar
    ------------------------------------------------------------------ */
-const BASE = "http://localhost:8080/api/wishlist";        // tekil path
+const BASE = `${process.env.REACT_APP_API_BASE_URL}/api/wishlist`;        // tekil path
 const authHeader = () => {
   const token = localStorage.getItem("jwtToken");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -63,7 +63,7 @@ export async function removeFromWishlist(itemId) {
    ------------------------------------------------------------------ */
 export async function fetchProduct(productId) {
   const { data } = await axios.get(
-    `http://localhost:8080/api/products/${productId}`
+    `${process.env.REACT_APP_API_BASE_URL}/api/products/${productId}`
   );
   return data;
 }

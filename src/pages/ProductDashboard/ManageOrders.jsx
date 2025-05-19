@@ -31,7 +31,7 @@ export default function ManageOrders() {
 
   const loadOrders = () => {
     setLoading(true);
-    axios.get("http://localhost:8080/api/orders")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/orders`)
       .then(res => setOrders(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -43,8 +43,8 @@ export default function ManageOrders() {
 
   const calcNextStatus = s =>
     s === "PROCESSING" ? "IN_TRANSIT"
-    : s === "IN_TRANSIT" ? "DELIVERED"
-    : null;
+      : s === "IN_TRANSIT" ? "DELIVERED"
+        : null;
 
   const openConfirm = o => {
     const ns = calcNextStatus(o.orderStatus);
@@ -60,7 +60,7 @@ export default function ManageOrders() {
     setLoading(true);
     axios
       .patch(
-        `http://localhost:8080/api/product-managers/orders/${selectedOrderId}/status`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/product-managers/orders/${selectedOrderId}/status`,
         null,
         { params: { status: nextStatus } }
       )

@@ -39,9 +39,9 @@ const DeliveredOrders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/deliveries")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/deliveries`)
       .then((res) => {
-        
+
         const filtered = res.data.filter(d => d.deliveryStatus === "DELIVERED");
         setDeliveries(filtered);
       })

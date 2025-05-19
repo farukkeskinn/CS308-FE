@@ -49,11 +49,11 @@ export default function ProductPage() {
 
       try {
         // 1️⃣ Get the core product (used for addToCart)
-        const productRes = await axios.get(`http://localhost:8080/api/products/${productId}/details`);
+        const productRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/products/${productId}/details`);
         setProduct(productRes.data);
 
         // 3️⃣ Then fetch recommended products
-        const recommendedRes = await axios.get(`http://localhost:8080/api/products/${productId}/recommended`);
+        const recommendedRes = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/products/${productId}/recommended`);
         if (recommendedRes.data.content && Array.isArray(recommendedRes.data.content)) {
           setRecommendedProducts(recommendedRes.data.content);
         }

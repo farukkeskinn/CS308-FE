@@ -7,7 +7,7 @@ import SearchBar from "./SearchBar";
 import { IconButton, Snackbar, Box } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import { useCartContext } from "../context/CartContext";
-import { useWishlist } from "../context/WishlistContext";  
+import { useWishlist } from "../context/WishlistContext";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 
@@ -20,7 +20,7 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState(localStorage.getItem("role") || "");
   const { cartItems, setCartItems } = useCartContext();
-    // ➤ useWishlist içinden sayacı alalım
+  // ➤ useWishlist içinden sayacı alalım
   const { items: favItems, loading: favLoading } = useWishlist();
   const [showLoginInfo, setShowLoginInfo] = useState(false);
   const favCount = favLoading ? 0 : favItems.length;
@@ -34,7 +34,7 @@ const Navbar = () => {
   const isCustomer = token && userRole !== "SALES_MANAGER" && userRole !== "PRODUCT_MANAGER";
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/categories")
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/categories`)
       .then((res) => res.json())
       .then((data) => {
         setCategories(data || []);
@@ -61,7 +61,7 @@ const Navbar = () => {
 
     window.history.replaceState(null, "", "/");
 
-    fetch("http://localhost:8080/api/auth/logout", {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -148,7 +148,7 @@ const Navbar = () => {
           </Box>
 
           <div className="d-flex align-items-center gap-2">
-            {token ? (               
+            {token ? (
               <div
                 className="position-relative d-flex justify-content-center align-items-center"
                 onMouseEnter={() => setProfileMenuOpen(true)}

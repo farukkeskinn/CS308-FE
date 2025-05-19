@@ -21,7 +21,7 @@ const NewCategoryForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/categories")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/categories`)
       .then(res => setAvailableCategories(res.data))
       .catch(err => console.error("Error fetching categories:", err));
   }, []);
@@ -37,7 +37,7 @@ const NewCategoryForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("http://localhost:8080/api/categories", category)
+    axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/categories`, category)
       .then(() => {
         navigate("/productdashboard/categories");
         window.location.reload();

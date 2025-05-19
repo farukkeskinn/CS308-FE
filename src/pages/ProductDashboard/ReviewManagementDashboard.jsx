@@ -20,7 +20,7 @@ export default function ReviewManagementDashboard() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/reviews', { params: { status: 'pending' } })
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/reviews`, { params: { status: 'pending' } })
       .then(res => setReviews(res.data))
       .catch(err => {
         console.error('❌ Failed to load reviews:', err.config?.method?.toUpperCase(), err.config?.url);
@@ -35,7 +35,7 @@ export default function ReviewManagementDashboard() {
     Promise.all(
       ids.map(id =>
         axios
-          .get(`http://localhost:8080/api/product-managers/products/${id}/name`)
+          .get(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${id}/name`)
           .then(r => [id, r.data.name])
           .catch(err => {
             console.error(`❌ Failed to load name for product ${id}:`, err.config?.method?.toUpperCase(), err.config?.url);
@@ -50,7 +50,7 @@ export default function ReviewManagementDashboard() {
     if (!window.confirm(`Are you sure you want to ${verb} this review?`)) return;
 
     axios
-      .patch(`http://localhost:8080/api/reviews/${reviewId}/approval`, null, { params: { status } })
+      .patch(`${process.env.REACT_APP_API_BASE_URL}/api/reviews/${reviewId}/approval`, null, { params: { status } })
       .then(() => {
         setReviews(reviews.filter(r => r.reviewId !== reviewId));
       })

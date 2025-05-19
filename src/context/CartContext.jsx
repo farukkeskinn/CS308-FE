@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
   // 🔁 Move fetchUserCart here:
   const fetchUserCart = async (customerId, jwtToken) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/cart-management/cart-by-customer/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/cart-by-customer/${customerId}`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
@@ -118,7 +118,7 @@ export const CartProvider = ({ children }) => {
       setCartItems(updatedCart);
     } else {
       try {
-        const response = await fetch("http://localhost:8080/api/cart-management/add-item", {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/cart-management/add-item`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -47,7 +47,7 @@ const ProductDashboard = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/product-managers/products")
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products`)
       .then((res) => setProducts(res.data))
       .catch((err) => console.error("Error fetching products:", err))
       .finally(() => setLoadingProducts(false));
@@ -63,7 +63,7 @@ const ProductDashboard = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?");
     if (confirmDelete) {
       axios
-        .delete(`http://localhost:8080/api/product-managers/products/${productId}`)
+        .delete(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${productId}`)
         .then(() => {
           setProducts(products.filter((p) => p.productId !== productId));
           showSnackbar("Product deleted successfully", "success");
@@ -79,7 +79,7 @@ const ProductDashboard = () => {
     const newQuantity = window.prompt(`Update Stock:\nCurrent quantity: ${product.quantity}\nEnter new quantity:`);
     if (newQuantity !== null && newQuantity.trim() !== "" && !isNaN(newQuantity)) {
       axios
-        .patch(`http://localhost:8080/api/product-managers/products/${product.productId}/stock`, null, {
+        .patch(`${process.env.REACT_APP_API_BASE_URL}/api/product-managers/products/${product.productId}/stock`, null, {
           params: { quantity: newQuantity },
         })
         .then((res) => {
@@ -97,7 +97,7 @@ const ProductDashboard = () => {
     const newCategoryName = window.prompt("Enter new category name:");
     if (newCategoryName && newCategoryName.trim() !== "") {
       axios
-        .put(`http://localhost:8080/api/products/${product.productId}/category/name/${newCategoryName}`)
+        .put(`${process.env.REACT_APP_API_BASE_URL}/api/products/${product.productId}/category/name/${newCategoryName}`)
         .then((res) => {
           setProducts(products.map((p) => (p.productId === product.productId ? res.data : p)));
           showSnackbar("Category updated successfully!", "success");

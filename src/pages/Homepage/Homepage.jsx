@@ -56,7 +56,7 @@ export default function HomePage() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get("http://localhost:8080/api/products/published")
+    axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/products/published`)
       .then((response) => {
         setProducts(response.data);
         setLoading(false);
@@ -228,7 +228,7 @@ export default function HomePage() {
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.productId}>
-                 <ProductCard product={product} />
+                <ProductCard product={product} />
               </Grid>
             ))
           ) : (

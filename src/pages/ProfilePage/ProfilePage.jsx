@@ -29,7 +29,7 @@ export default function ProfilePage() {
     const jwtToken = localStorage.getItem("jwtToken");
 
     try {
-      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/customers/${customerId}`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
@@ -47,54 +47,54 @@ export default function ProfilePage() {
   };
 
   const handlePasswordChange = async () => {
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    setError("Please fill out all fields.");
-    return;
-  }
-
-  if (newPassword !== confirmPassword) {
-    setError("New passwords do not match.");
-    return;
-  }
-
-  try {
-    const jwtToken = localStorage.getItem("jwtToken");
-    const customerId = localStorage.getItem("customerId");
-
-    const response = await fetch(`http://localhost:8080/api/customers/${customerId}/change-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwtToken}`,
-      },
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-      }),
-    });
-
-    if (response.ok) {
-      setOpenPasswordDialog(false);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setError("");
-      alert("Password updated successfully!");
-    } else if (response.status === 401) {
-      setError("Current password is incorrect.");
-    } else {
-      setError("Failed to update password.");
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Please fill out all fields.");
+      return;
     }
-  } catch (err) {
-    setError("An error occurred.");
-  }
-};
+
+    if (newPassword !== confirmPassword) {
+      setError("New passwords do not match.");
+      return;
+    }
+
+    try {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const customerId = localStorage.getItem("customerId");
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/customers/${customerId}/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      if (response.ok) {
+        setOpenPasswordDialog(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setError("");
+        alert("Password updated successfully!");
+      } else if (response.status === 401) {
+        setError("Current password is incorrect.");
+      } else {
+        setError("Failed to update password.");
+      }
+    } catch (err) {
+      setError("An error occurred.");
+    }
+  };
 
   const handleDeleteAddress = async (addressId) => {
     const jwtToken = localStorage.getItem("jwtToken");
 
     try {
-      const response = await fetch(`http://localhost:8080/api/addresses/${addressId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/addresses/${addressId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${jwtToken}`,
