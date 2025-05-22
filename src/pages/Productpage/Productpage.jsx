@@ -415,7 +415,7 @@ function TableSection({ product }) {
           </TableRow>
           <TableRow>
             <TableCell>Warranty</TableCell>
-            <TableCell>{product.warranty_status} Years</TableCell>
+            <TableCell>{product.warrantyStatus} Months</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Distributor</TableCell>
